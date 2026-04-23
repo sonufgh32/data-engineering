@@ -50,7 +50,7 @@ jobs:
           ls -la
           pwd
           aws cloudformation validate-template \
-            --template-body file://${{ env.TEMPLATE_FILE }}
+            --template-body ${{ env.TEMPLATE_FILE }}
 
       - name: Deploy CloudFormation Stack
         run: |
