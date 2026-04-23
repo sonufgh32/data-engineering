@@ -31,7 +31,7 @@ jobs:
     env:
       AWS_REGION: ${{ github.event.inputs.region }}
       STACK_NAME: ${{ github.event.inputs.stack_name }}
-      TEMPLATE_FILE: ${{ github.event.inputs.stack_name }}/cloudformation/cft.yml
+      TEMPLATE_FILE: ../../${{ github.event.inputs.stack_name }}/cloudformation/cft.yml
 
     steps:
       - name: Git clone the repository
