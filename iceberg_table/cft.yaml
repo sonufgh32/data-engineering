@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS CloudFormation which creates the resources for the aws iceberg glue tutorial 
+
+Parameters:
+  S3PySparkBucketName:
+    Type: String
+    Description: Bucket name for the aws tutorial
+    Default: iceberg-tutorial-data
+Resources:
+  S3BucketForData:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Sub '${S3PySparkBucketName}-${AWS::AccountId}'
+      Tags:
+      - Key: BucketName
+        Value: !Sub '${S3PySparkBucketName}-${AWS::AccountId}'
+
+  GlueDatabase:
+    Type: AWS::Glue::Database
+    Properties: 
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput: 
+        Name: !Sub 'iceberg-db-${AWS::AccountId}'
+        Description: "This database contains the tables for the iceberg tutorial"
+
+  AthenaSQLWorkGroup:
+    DependsOn: 
+    - GlueDatabase
+    - S3BucketForData
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: sql-engine-workgroup
+      Description: Athena SQL Workgroup
+      State: ENABLED
+      WorkGroupConfiguration:
+        ResultConfiguration:
+          OutputLocation: !Sub s3://${S3PySparkBucketName}-${AWS::AccountId}/athena_results
+        EnforceWorkGroupConfiguration: true
+        PublishCloudWatchMetricsEnabled: true
+
+  AthenaSparkWorkGroup:
+    DependsOn: 
+    - GlueDatabase
+    - S3BucketForData
+    - AthenaSQLWorkGroup
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: spark-engine-workgroup
+      Description: Athena Spark Workgroup
+      State: ENABLED
+      WorkGroupConfiguration:
+        EngineVersion:
+          SelectedEngineVersion: Athena engine version 3
+        ResultConfiguration:
+          OutputLocation: !Sub s3://${S3PySparkBucketName}-${AWS::AccountId}/athena_results
+        PublishCloudWatchMetricsEnabled: true
+
+Outputs:
+  SQLWorkgroup:
+    Value: !Ref AthenaSQLWorkGroup
+
+  SparkWorkgroup:
+    Value: !Ref AthenaSparkWorkGroup
+  
+  S3Bucket:
+    Value: !Ref S3BucketForData

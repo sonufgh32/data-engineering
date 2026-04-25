@@ -54,6 +54,7 @@ jobs:
 
       - name: Deploy CloudFormation Stack
         run: |
+          STACK_NAME_FL="${STACK_NAME//_/-}"
           aws cloudformation deploy \
             --stack-name ${{ env.STACK_NAME }} \
             --template-file ${{ env.TEMPLATE_FILE }} \
