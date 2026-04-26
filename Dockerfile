@@ -73,7 +73,8 @@ RUN pip install --upgrade pip && \
     psycopg2-binary \
     pyodbc \
     scikit-learn \
-    scipy
+    scipy \
+    delta-spark
 
 # ------------------------------------------------------------
 # 7. Spark / AWS Runtime Variables

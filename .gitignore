@@ -1,3 +1,5 @@
 scripts/.Trash-10000/*
 scripts/metastore_db/*
 scripts/.ipynb_checkpoints/*
+derby.log
+*.log
