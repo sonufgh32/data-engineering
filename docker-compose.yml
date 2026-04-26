@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  pyspark:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pyspark-container
+
+    ports:
+      - "8888:8888"     # Jupyter Lab
+      - "4040:4040"     # Spark UI
+      - "18080:18080"   # Spark History Server (optional)
+
+    volumes:
+      - ./scripts:/workspace
+      - C:\Users\sonuf\.aws:/root/.aws
+
+    environment:
+      - AWS_DEFAULT_REGION=ap-south-1
+      - PYSPARK_PYTHON=/env/bin/python
+
+    working_dir: /workspace
+
+    stdin_open: true
+    tty: true
