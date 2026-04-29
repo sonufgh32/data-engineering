@@ -1,0 +1,11 @@
+[Unit]
+Description=Alloy service
+After=network.target
+
+[Service]
+Type=simple
+User=alloy
+ExecStart=/usr/local/bin/alloy-linux-amd64 run --storage.path=/tmp/alloy/ /usr/local/bin/config.alloy
+
+[Install]
+WantedBy=multi-user.target

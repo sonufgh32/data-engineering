@@ -42,12 +42,28 @@ ENV SPARK_HOME=/opt/spark
 ENV PATH=$PATH:$JAVA_HOME/bin:$SPARK_HOME/bin:$SPARK_HOME/sbin
 
 # ------------------------------------------------------------
-# 4. Install Spark 3.5.1
+# 4. Install Spark 3.5.1 & Alloy
 # ------------------------------------------------------------
 RUN wget https://archive.apache.org/dist/spark/spark-3.5.1/spark-3.5.1-bin-hadoop3.tgz && \
     tar -xzf spark-3.5.1-bin-hadoop3.tgz && \
     mv spark-3.5.1-bin-hadoop3 /opt/spark && \
-    rm spark-3.5.1-bin-hadoop3.tgz
+    rm spark-3.5.1-bin-hadoop3.tgz && \
+    cd /usr/local/bin && \
+    curl -O -L "https://github.com/grafana/alloy/releases/download/v1.11.3/alloy-linux-amd64.zip" && \
+    unzip "alloy-linux-amd64.zip" && \
+    rm alloy-linux-amd64.zip && \
+    chmod +x alloy-linux-amd64
+
+RUN pwd
+RUN ls -l
+RUN addgroup --system alloy && adduser --system --ingroup alloy alloy
+
+COPY config.alloy /etc/alloy/config.alloy
+COPY entrypoint.sh /entrypoint.sh
+COPY log4j.properties /opt/spark/conf/log4j.properties
+RUN chmod +x /entrypoint.sh
+
+RUN mkdir -p /etc/alloy
 
 # ------------------------------------------------------------
 # 5. Python Virtual Environment
@@ -101,10 +117,11 @@ org.apache.iceberg:iceberg-aws-bundle:1.5.0 pyspark-shell"
 EXPOSE 8888
 EXPOSE 4040
 EXPOSE 18080
+EXPOSE 12345
 
 WORKDIR /workspace
 
 # ------------------------------------------------------------
 # 9. Start Jupyter Lab
 # ------------------------------------------------------------
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
+CMD ["/entrypoint.sh", "jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]

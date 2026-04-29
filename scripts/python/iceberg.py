@@ -15,8 +15,10 @@ spark = (SparkSession.builder
                                             "software.amazon.awssdk:dynamodb:2.25.26," \
                                             "org.apache.iceberg:iceberg-aws-bundle:1.5.0," \
                                             "software.amazon.awssdk:url-connection-client:2.25.26")
+            .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension," \
+                                            "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions," \
+                                            "org.apache.spark.sql.hudi.HoodieSparkSessionExtension")
             .config("spark.hadoop.fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-            .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension,org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,org.apache.spark.sql.hudi.HoodieSparkSessionExtension")
             .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
             .config("spark.sql.catalog.glue_catalog",  "org.apache.iceberg.spark.SparkCatalog")
             .config("spark.sql.catalog.glue_catalog.warehouse", "s3://shivchoudhury-datasets/warehouse/")
