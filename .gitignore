@@ -5,3 +5,8 @@ python/.ipynb_checkpoints/*
 derby.log
 *.log
 scripts/data-alloy/*
+terraform/.terraform/*
+terraform/.terraform.*
+docker-compose-upgrade.yml
+scripts/node_exporter-*
+scripts/*.tar.gz*

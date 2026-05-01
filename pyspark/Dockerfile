@@ -124,4 +124,5 @@ WORKDIR /workspace
 # ------------------------------------------------------------
 # 9. Start Jupyter Lab
 # ------------------------------------------------------------
-CMD ["/entrypoint.sh", "jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]

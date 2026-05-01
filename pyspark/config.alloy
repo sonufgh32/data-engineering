@@ -20,3 +20,16 @@ loki.write "default" {
         }
         external_labels = {}
 }
+
+prometheus.remote_write "default" {
+        endpoint {
+                url = "http://prometheus:9090/api/v1/write"
+        }
+}
+
+prometheus.scrape "pyspark" {
+        targets = [{
+                __address__ = "localhost:9100",
+        }]
+        forward_to = [prometheus.remote_write.default.receiver]
+}
