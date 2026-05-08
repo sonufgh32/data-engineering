@@ -10,3 +10,11 @@ terraform/.terraform.*
 docker-compose-upgrade.yml
 scripts/node_exporter-*
 scripts/*.tar.gz*
+kafka/*.ipynb_checkpoints/*
+kafka/__pycache__/*
+kakfa/tests/__pycache__/*
+kafka/tests/*
+__pycache__/*
+scripts/__pycache__/*
+scripts/kafka/.ipynb_checkpoints/*
+scripts/kafka/__pycache__/*

@@ -92,7 +92,8 @@ RUN pip install --upgrade pip && \
     pyodbc \
     scikit-learn \
     scipy \
-    delta-spark
+    delta-spark \
+    kafka-python
 
 # ------------------------------------------------------------
 # 7. Spark / AWS Runtime Variables
