@@ -8,7 +8,32 @@ MAX_CLUSTER_COUNT = 2
 SCALING_POLICY = 'STANDARD'
 COMMENT = 'Data Analytics Warehouse for BI and Data Analysis';
 
-CREATE RESOURCE MONITOR monthly_monitor
+CREATE OR REPLACE RESOURCE MONITOR monthly_monitor_data_analytics
+WITH
+CREDIT_QUOTA = 5
+FREQUENCY = MONTHLY
+START_TIMESTAMP = IMMEDIATELY
+TRIGGERS
+ON 70 PERCENT DO NOTIFY
+ON 90 PERCENT DO SUSPEND
+ON 100 PERCENT DO SUSPEND_IMMEDIATE;
+
+ALTER WAREHOUSE data_analytics_wh SET RESOURCE_MONITOR = monthly_monitor_data_analytics;
+
+GRANT USAGE, OPERATE ON WAREHOUSE data_analytics_wh TO ROLE data_analyst_role;
+GRANT MONITOR ON RESOURCE MONITOR monthly_monitor_data_analytics TO ROLE data_analyst_role;
+
+CREATE OR REPLACE WAREHOUSE data_engineer_wh
+WITH
+WAREHOUSE_SIZE = 'MEDIUM'
+AUTO_SUSPEND = 60
+AUTO_RESUME = TRUE
+MIN_CLUSTER_COUNT = 1
+MAX_CLUSTER_COUNT = 2
+SCALING_POLICY = 'ECONOMY'
+COMMENT = 'Data Engineering Warehouse for ETL and Data Processing';
+
+CREATE OR REPLACE RESOURCE MONITOR monthly_monitor_data_engineering
 WITH
 CREDIT_QUOTA = 10
 FREQUENCY = MONTHLY
@@ -18,6 +43,8 @@ ON 70 PERCENT DO NOTIFY
 ON 90 PERCENT DO SUSPEND
 ON 100 PERCENT DO SUSPEND_IMMEDIATE;
 
-ALTER WAREHOUSE data_analytics_wh SET RESOURCE_MONITOR = monthly_monitor;
+ALTER WAREHOUSE data_engineer_wh SET RESOURCE_MONITOR = monthly_monitor_data_engineering;
+GRANT USAGE, OPERATE, MODIFY ON WAREHOUSE data_engineer_wh TO ROLE data_engineer_role;
+GRANT MODIFY ON RESOURCE MONITOR monthly_monitor_data_engineering TO ROLE data_engineer_role;
 
-GRANT USAGE, OPERATE ON WAREHOUSE data_analytics_wh TO ROLE data_analyst_role;
+SHOW WAREHOUSES;
