@@ -40,6 +40,11 @@ jobs:
         run: |
           echo "Workflow: ${{ github.workflow }}"
 
-      - name: Print GitHub
+      # Print all the GitHub object
+      - name: Print GitHub Context Object
         run: |
-          echo "GitHub: ${{ github }}"
+          echo "GitHub Context: ${{ toJson(github) }}"
+        
+      - name: Print GitHub event object
+        run: |
+          echo "GitHub: ${{ github.event }}"
