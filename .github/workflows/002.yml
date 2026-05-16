@@ -1,5 +1,5 @@
 name: Test Project
-
+run-name: Run tests, deploy
 on: [push]
 
 jobs:
@@ -28,4 +28,27 @@ jobs:
           working-directory: frontend/github-actions-first
           run: |
             npm test
+    
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Get the code
+          uses: actions/checkout@v3
         
+        - name: Install NodeJS
+          uses: actions/setup-node@v3
+          with:
+            node-version: '18'
+
+        - name: Install dependencies
+          working-directory: frontend/github-actions-first
+          run:
+            npm ci
+
+        - name: Build Project
+          working-directory: frontend/github-actions-first
+          run: |
+            npm run build
+
+        - name: Deploy
+          run: echo "Deploying the project ..."
