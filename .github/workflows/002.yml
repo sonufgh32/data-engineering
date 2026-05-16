@@ -15,12 +15,12 @@ jobs:
             node-version: '18'
 
         - name: Install dependencies
+          working-directory: frontend/github-actions-first
           run:
-            cd frontend/github-actions-first
             npm install
 
         - name: Run tests
+          working-directory: frontend/github-actions-first
           run: |
-            cd frontend/github-actions-first
             npm test
         
