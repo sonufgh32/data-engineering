@@ -3,10 +3,9 @@ name: Artifacts - Deploy Website
 # This will create a build folder with the production build of the website
 
 on:
-    push:
-        branches:
-            - main
-
+    # push:
+    #     branches:
+    #         - main
     workflow_dispatch:
 
 jobs:

@@ -6,7 +6,6 @@ on:
     push:
         branches:
             - main
-
     workflow_dispatch:
 
 env:
@@ -36,7 +35,8 @@ jobs:
             npm ci
         
         - name: Run server
-          run: npm start & npx wait-on http://127.0.0.1:$PORT
+          working-directory: frontend/github-actions-second
+          run: npm start & npx wait-on http://127.0.0.1:${{ env.PORT }}
 
         - name: Run tests
           working-directory: frontend/github-actions-second

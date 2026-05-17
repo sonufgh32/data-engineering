@@ -5,12 +5,12 @@ name: GitHub Actions - Event
 # Step = Individual command/action executed inside a job
 
 on:
-  pull_request:
-    types:
-        - opened
-        - edited
-        - reopened
-        - synchronize
+  # pull_request:
+  #   types:
+  #       - opened
+  #       - edited
+  #       - reopened
+  #       - synchronize
   workflow_dispatch:
 
 jobs:
