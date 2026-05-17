@@ -57,6 +57,7 @@ jobs:
 
         - name: Publish JS filename
           id: publish-js-filename
+          working-directory: frontend/github-actions-first
           run: find dist/assets/*.js -type f -execdir echo 'script-file={}' >> $GITHUB_OUTPUT ';'
           # run: find dist/assets/*.js -type f -execdir echo '::set-output name=script-file::{}' ';' # Not supported
         
