@@ -1,4 +1,4 @@
-name: Artifacts - Deploy Website
+name: Environment Variables
 
 # This will create a build folder with the production build of the website
 
