@@ -1,0 +1,56 @@
+name: Artifacts - Deploy Website
+
+# This will create a build folder with the production build of the website
+
+on:
+    push:
+        branches:
+            - main
+
+    workflow_dispatch:
+
+env:
+    MONGODB_DB_NAME: gha-demo
+jobs:
+    test:
+        env:
+            MONGODB_CLUSTER_ADDRESS: cluster0.5ibi6xj.mongodb.net
+            MONGODB_USERNAME: shivramriti322_db_user
+            MONGODB_PASSWORD: u5M1q7KIO6jZKqWW
+            PORT: 8080
+        
+        runs-on: ubuntu-latest
+        steps:
+        - name: Get the code
+          uses: actions/checkout@v3
+
+        - name: Cache dependencies
+          uses: actions/cache@v3
+          with:
+            path: ~/.npm
+            key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+        - name: Install dependencies
+          working-directory: frontend/github-actions-second
+          run:
+            npm ci
+        
+        - name: Run server
+          run: npm start & npx wait-on http://127.0.0.1:$PORT
+
+        - name: Run tests
+          working-directory: frontend/github-actions-second
+          run: |
+            npm run test
+        
+        - name: Output information
+          run: |
+            echo "MONODB_USERNAME: ${{ env.MONGODB_USERNAME }}"
+    
+    deploy:
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+            - name: Output information
+              run: |
+                echo "MONODB_USERNAME: ${{ env.MONGODB_USERNAME }}"
