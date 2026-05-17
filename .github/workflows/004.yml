@@ -1,0 +1,67 @@
+name: Artifacts - Deploy Website
+
+# This will create a build folder with the production build of the website
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Get the code
+          uses: actions/checkout@v3
+        
+        - name: Install NodeJS
+          uses: actions/setup-node@v3
+          with:
+            node-version: '18'
+
+        - name: Install dependencies
+          working-directory: frontend/github-actions-first
+          run:
+            npm ci
+
+        - name: Run tests
+          working-directory: frontend/github-actions-first
+          run: |
+            npm run test
+    
+    build:
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+        - name: Get the code
+          uses: actions/checkout@v3
+        
+        - name: Install NodeJS
+          uses: actions/setup-node@v3
+          with:
+            node-version: '18'
+
+        - name: Install dependencies
+          working-directory: frontend/github-actions-first
+          run:
+            npm ci
+
+        - name: Build Project
+          working-directory: frontend/github-actions-first
+          run: |
+            npm run build
+        
+        - name: Upload artifact
+          uses: actions/upload-artifact@v3
+          with:
+            name: dist-files
+            path: |
+                frontend/github-actions-first/dist
+                frontend/github-actions-first/package.json
+    
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Deploy
+              run: echo "Deploying the website"
