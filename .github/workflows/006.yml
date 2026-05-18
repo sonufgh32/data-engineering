@@ -80,7 +80,8 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                 name: dist-files
-                path: dist
+                path: |
+                    frontend/github-actions-third/dist
 
     deploy:
         needs: build
