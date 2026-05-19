@@ -110,7 +110,7 @@ jobs:
 
     report:
       needs: [lint, deploy]
-      if: always() # This step will run regardless of the outcome of previous steps
+      if: failure() # Only run this job if any of the previous jobs have failed
       runs-on: ubuntu-latest
       steps:
           - name: Output information
