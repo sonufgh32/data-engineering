@@ -96,7 +96,8 @@ jobs:
     deploy:
         needs: build
         uses: ./.github/workflows/009_resuable_workflow.yml # Reusable Workflow
-
+        with:
+            artifact-name: dist-files
     report:
       needs: [lint, deploy]
       if: failure() # Only run this job if any of the previous jobs have failed
