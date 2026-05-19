@@ -107,3 +107,13 @@ jobs:
             
             - name: Deploy Code
               run: echo "Deploying code..."
+
+    report:
+      needs: [lint, deploy]
+      if: always() # This step will run regardless of the outcome of previous steps
+      runs-on: ubuntu-latest
+      steps:
+          - name: Output information
+            run: |
+              echo "Something went wrong"
+              echo "${{ github }}"
