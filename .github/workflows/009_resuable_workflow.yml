@@ -8,6 +8,11 @@ on:
                 default: 'dist-files'
                 required: true
                 type: string
+        
+        outputs:
+            result:
+                description: 'Output result from the reusable workflow'
+                value: ${{ jobs.deploy.outputs.outcome }}
 
         secrets:
             some-secret:
@@ -16,6 +21,8 @@ on:
 
 jobs:
     deploy:
+        outputs:
+            outcome: ${{ steps.set-output.outputs.set-result }}
         runs-on: ubuntu-latest
         steps:
             - name: Get Code
@@ -30,3 +37,7 @@ jobs:
 
             - name: Run deployment script
               run: echo "Deploying application..."
+            
+            - name: Set Output
+              id: set-output
+              run: echo "set-result=Deployment Successful" >> $GITHUB_OUTPUT
