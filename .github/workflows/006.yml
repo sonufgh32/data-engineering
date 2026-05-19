@@ -6,9 +6,10 @@ name: Execution Flow
 # cancelled(): Returns true if the workflow has been cancelled.
 
 on:
-    push:
-        branches:
-            - main
+    # push:
+    #     branches:
+    #         - main
+    workflow_dispatch: # Allows manual triggering of the workflow from the GitHub Actions tab
 
 jobs:
     lint:
