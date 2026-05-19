@@ -21,10 +21,11 @@ jobs:
               id: cache
               uses: actions/cache@v3
               with:
-                path: ~/.npm
+                path: frontend/github-actions-third/node_modules # ~/.npm
                 key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
 
             - name: Install Dependencies
+              if: steps.cache.outputs.cache-hit != 'true' # Only install dependencies if cache was not hit
               working-directory: frontend/github-actions-third
               run: npm ci
             
@@ -42,10 +43,11 @@ jobs:
               id: cache
               uses: actions/cache@v3
               with:
-                path: ~/.npm
+                path: frontend/github-actions-third/node_modules
                 key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
             
             - name: Install Dependencies
+              if: steps.cache.outputs.cache-hit != 'true' # Only install dependencies if cache was not hit
               working-directory: frontend/github-actions-third
               run: npm ci
 
@@ -72,10 +74,11 @@ jobs:
               id: cache
               uses: actions/cache@v3
               with:
-                path: ~/.npm
+                path: frontend/github-actions-third/node_modules
                 key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
 
             - name: Install Dependencies
+              if: steps.cache.outputs.cache-hit != 'true' # Only install dependencies if cache was not hit
               working-directory: frontend/github-actions-third
               run: npm ci
 
