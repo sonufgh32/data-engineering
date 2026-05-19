@@ -9,6 +9,11 @@ on:
                 required: true
                 type: string
 
+        secrets:
+            some-secret:
+                description: 'A secret that can be used in the reusable workflow'
+                required: false
+
 jobs:
     deploy:
         runs-on: ubuntu-latest
@@ -19,7 +24,9 @@ jobs:
                 name: ${{ inputs.artifact-name }}
 
             - name: Output contents
-              run: ls -la
+              run: |
+                ls -la
+                echo ${{ secrets.some-secret }}
 
             - name: Run deployment script
               run: echo "Deploying application..."
