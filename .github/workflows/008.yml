@@ -1,0 +1,37 @@
+name: Matrix Example
+
+
+# Matrix --> A strategy that allows you to run a job with different combinations of
+# parameters, such as different versions of a language or different operating
+# systems. This is useful for testing your code across multiple environments.
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    build:
+        strategy:
+            matrix:
+                node-version: [14, 16, 18]
+                operating-system: [ubuntu-latest, windows-latest]
+
+        runs-on: ${{ matrix.operating-system }}
+        steps:
+            - name: Get Code
+              uses: actions/checkout@v3
+
+            - name: Install Dependencies
+              uses: actions/setup-node@v3
+              with:
+                node-version: ${{ matrix.node-version }}
+
+            - name: Install Dependencies
+              working-directory: frontend/github-actions-third
+              run: npm ci
+
+            - name: Build Code
+              working-directory: frontend/github-actions-third
+              run: npm run build

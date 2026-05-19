@@ -5,9 +5,10 @@ name: Execution Flow
 # success or failure of previous jobs, such as cleanup tasks or notifications.
 
 on:
-    push:
-        branches:
-            - main
+    # push:
+    #     branches:
+    #         - main
+    workflow_dispatch:
 
 jobs:
     lint:
