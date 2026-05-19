@@ -13,6 +13,11 @@ on:
 
 jobs:
     build:
+        continue-on-error: true
+        # when one jobs failed, the rest of the jobs will continue to run and the
+        # workflow will not be marked as failed until all jobs have completed. This
+        # is useful for testing multiple combinations of parameters without stopping
+        # the entire workflow if one combination fails.
         strategy:
             matrix:
                 node-version: [14, 16, 18]
