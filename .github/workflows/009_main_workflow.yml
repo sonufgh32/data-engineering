@@ -1,0 +1,108 @@
+name: Execution Flow
+
+# continue-on-error: Allows a job to continue running even if a previous job has failed.
+# This is useful for scenarios where you want to run certain jobs regardless of the
+# success or failure of previous jobs, such as cleanup tasks or notifications.
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Get Code
+              uses: actions/checkout@v3
+            
+            - name: Cache Dependencies
+              id: cache
+              uses: actions/cache@v3
+              with:
+                path: frontend/github-actions-third/node_modules # ~/.npm
+                key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+            - name: Install Dependencies
+              if: steps.cache.outputs.cache-hit != 'true' # Only install dependencies if cache was not hit
+              working-directory: frontend/github-actions-third
+              run: npm ci
+            
+            - name: Lint Code
+              working-directory: frontend/github-actions-third
+              run: npm run lint
+
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Get Code
+              uses: actions/checkout@v3
+            
+            - name: Cache Dependencies
+              id: cache
+              uses: actions/cache@v3
+              with:
+                path: frontend/github-actions-third/node_modules
+                key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+            
+            - name: Install Dependencies
+              if: steps.cache.outputs.cache-hit != 'true' # Only install dependencies if cache was not hit
+              working-directory: frontend/github-actions-third
+              run: npm ci
+
+            - name: Test Code
+              continue-on-error: true # Job Should Continue Even If This Step Fails
+              id: test-step
+              working-directory: frontend/github-actions-third
+              run: npm run test
+
+            - name: Upload Test Results
+              if: failure() && steps.test-step.outcome == 'failure'
+              uses: actions/upload-artifact@v4
+              with:
+                name: test-report
+                path: frontend/github-actions-third/test.json
+
+    build:
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+            - name: Get Code
+              uses: actions/checkout@v3
+            
+            - name: Cache Dependencies
+              id: cache
+              uses: actions/cache@v3
+              with:
+                path: frontend/github-actions-third/node_modules
+                key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+            - name: Install Dependencies
+              if: steps.cache.outputs.cache-hit != 'true' # Only install dependencies if cache was not hit
+              working-directory: frontend/github-actions-third
+              run: npm ci
+
+            - name: Build Code
+              working-directory: frontend/github-actions-third
+              run: npm run build
+
+            - name: Upload Build Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                name: dist-files
+                path: |
+                    frontend/github-actions-third/dist
+
+    deploy:
+        needs: build
+        uses: ./.github/workflows/009_resuable_workflow.yml # Reusable Workflow
+
+    report:
+      needs: [lint, deploy]
+      if: failure() # Only run this job if any of the previous jobs have failed
+      runs-on: ubuntu-latest
+      steps:
+          - name: Output information
+            run: |
+              echo "Something went wrong"
+              echo "${{ github }}"

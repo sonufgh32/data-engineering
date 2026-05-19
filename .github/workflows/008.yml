@@ -6,9 +6,9 @@ name: Matrix Example
 # systems. This is useful for testing your code across multiple environments.
 
 on:
-    push:
-        branches:
-            - main
+    # push:
+    #     branches:
+    #         - main
     workflow_dispatch:
 
 jobs:
