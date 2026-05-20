@@ -16,8 +16,8 @@ jobs:
             working-directory: frontend/github-actions-container
         environment: SAT
         runs-on: ubuntu-latest
-        container:
-          image: node:16
+        # container:
+        #   image: node:16
           # env:
           #   key: value
         env:
