@@ -9,12 +9,11 @@ env:
     CACHE_KEY: node-deps
     MONGODB_DB_NAME: gha-demo
 
-defaults:
-    run:
-        working-directory: frontend/github-actions-container
-
 jobs:
     test:
+        defaults:
+          run:
+            working-directory: frontend/github-actions-container
         environment: SAT
         runs-on: ubuntu-latest
         container:
