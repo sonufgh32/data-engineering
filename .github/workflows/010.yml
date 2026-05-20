@@ -17,6 +17,10 @@ jobs:
     test:
         environment: SAT
         runs-on: ubuntu-latest
+        container:
+          image: node:16
+          # env:
+          #   key: value
         env:
             MONGODB_CONNECTION_PROTOCOL: mongodb+srv
             MONGODB_CLUSTER_ADDRESS: gh-demo-container.x3ygcel.mongodb.net
