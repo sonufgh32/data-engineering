@@ -9,7 +9,7 @@ on:
 defaults:
     run:
         shell: bash
-        working-directory: frontend/github-actions-first
+        working-directory: frontend/github-actions-third
 
 env:
     NODE_VERSION: 20
