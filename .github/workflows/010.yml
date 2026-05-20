@@ -15,11 +15,11 @@ defaults:
 
 jobs:
     test:
-        environment: Testing
+        environment: SAT
         runs-on: ubuntu-latest
         env:
             MONGODB_CONNECTION_PROTOCOL: mongodb+srv
-            MONGODB_CLUSTER_ADDRESS: cluster0.ntrwp.mongodb.net
+            MONGODB_CLUSTER_ADDRESS: gh-demo-container.x3ygcel.mongodb.net
             MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
             MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
             PORT: 8080
