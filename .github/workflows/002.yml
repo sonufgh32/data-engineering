@@ -1,4 +1,4 @@
-name: Test Project
+name: 002 - Test Project
 run-name: Run tests, deploy
 on:
   # push:

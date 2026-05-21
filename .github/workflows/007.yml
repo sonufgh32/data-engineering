@@ -1,4 +1,4 @@
-name: Execution Flow - Failure
+name: 007 - Execution Flow - Failure
 
 # continue-on-error: Allows a job to continue running even if a previous job has failed.
 # This is useful for scenarios where you want to run certain jobs regardless of the

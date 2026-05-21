@@ -1,4 +1,4 @@
-name: GitHub Actions - Event
+name: 003 - GitHub Actions - Event
 
 # Workflow = Entire automation process
 # Job = A group of tasks inside the workflow

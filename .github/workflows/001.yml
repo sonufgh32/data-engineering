@@ -1,4 +1,4 @@
-name: GitHub Actions - example
+name: 001 - GitHub Actions - example
 run-name: First GitHub Actions Workflow
 
 # Workflow = Entire automation process
