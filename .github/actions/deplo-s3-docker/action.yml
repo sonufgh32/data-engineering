@@ -1,0 +1,6 @@
+name: Docker Action
+description: Docker Action
+
+runs:
+  using: docker
+  image: Dockerfile
