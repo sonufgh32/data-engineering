@@ -24,7 +24,7 @@ jobs:
         runs-on: ubuntu-latest
         defaults:
             run:
-                working_directory: frontend/github-actions-third
+                working-directory: frontend/github-actions-third
         
         outputs:
             image-tag: ${{ steps.meta.outputs.image-tag }}
