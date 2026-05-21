@@ -25,6 +25,7 @@ jobs:
               uses: ./.github/actions/cached-deps/
               with:
                 working-directory: ${{ env.WORK_DIR }}
+                caching: 'false'
         
             - name: Lint code
               run: npm run lint
