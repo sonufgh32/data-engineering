@@ -7,9 +7,11 @@ on:
 
     workflow_dispatch:
 
+env:
+
 defaults:
     run:
-        working-directory: frontend/github-composite-actions
+        working-directory: ${{ env.WORK_DIR }}
 
 jobs:
     lint:
@@ -21,7 +23,7 @@ jobs:
             - name: Load & cache dependencies
               uses: ./.github/actions/cached-deps/
               with:
-                working-directory: frontend/github-composite-actions
+                working-directory: ${{ env.WORK_DIR }}
         
             - name: Lint code
               run: npm run lint
@@ -32,16 +34,10 @@ jobs:
             - name: Get code
               uses: actions/checkout@v3
         
-            - name: Cache dependencies
-              id: cache
-              uses: actions/cache@v3
+            - name: Load & cache dependencies
+              uses: ./.github/actions/cached-deps/
               with:
-                path: node_modules
-                key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
-            
-            - name: Install dependencies
-              if: steps.cache.outputs.cache-hit != 'true'
-              run: npm ci
+                working-directory: ${{ env.WORK_DIR }}
 
             - name: Test code
               id: run-tests
@@ -61,16 +57,10 @@ jobs:
             - name: Get code
               uses: actions/checkout@v3
 
-            - name: Cache dependencies
-              id: cache
-              uses: actions/cache@v3
+            - name: Load & cache dependencies
+              uses: ./.github/actions/cached-deps/
               with:
-                path: node_modules
-                key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
-        
-            - name: Install dependencies
-              if: steps.cache.outputs.cache-hit != 'true'
-              run: npm ci
+                working-directory: ${{ env.WORK_DIR }}
 
             - name: Build website
               run: npm run build
