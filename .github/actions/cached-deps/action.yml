@@ -4,6 +4,12 @@ description: Get the dependencies and cache them
 runs:
   using: 'composite'
   steps:
+    - name: List Files
+      run: |
+        pwd
+        ls -la
+      shell: bash
+      
     - name: Cache dependencies
       id: cache
       uses: actions/cache@v3
