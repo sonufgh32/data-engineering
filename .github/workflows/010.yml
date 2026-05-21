@@ -8,6 +8,7 @@ on:
 env:
     CACHE_KEY: node-deps
     MONGODB_DB_NAME: gha-demo
+    MONGODB_USERNAME: admin
 
 jobs:
     test:
