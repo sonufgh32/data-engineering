@@ -8,10 +8,11 @@ on:
     workflow_dispatch:
 
 env:
+    WORK_DIR: frontend/github-composite-actions
 
 defaults:
     run:
-        working-directory: ${{ env.WORK_DIR }}
+        working-directory: frontend/github-composite-actions
 
 jobs:
     lint:
