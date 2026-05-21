@@ -1,5 +1,8 @@
 name: 016 - Label Issues (Script Injection Example)
 
+# Create issue with below title to test:
+#   1. a"; echo Got your secrets"
+
 on:
     issues:
         types:
@@ -10,9 +13,11 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Assign label
+              env: # use env to resolve this issue
+                TITLE: ${{ github.event.issue.title }}
               run: |
-                issue_title="${{ github.event.issue.title }}"
-                if [[ "$issue_title" == *"bug"* ]]; then
+                # TITLE="${{ github.event.issue.title }}"
+                if [[ "$TITLE" == *"bug"* ]]; then
                 echo "Issue is about a bug!"
                 else
                 echo "Issue is not about a bug"
