@@ -7,8 +7,10 @@ on:
 
 jobs:
     assign-labels:
+        permissions: # read-all, write-all
+            issues: write
+            
         runs-on: ubuntu-latest
-
         steps:
             - name: Assign Label
               if: contains(github.event.issue.title, 'bug')
