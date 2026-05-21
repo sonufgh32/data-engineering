@@ -1,6 +1,11 @@
 name: Composite Action - Get & Cache Dependencies
 description: Get the dependencies and cache them
 
+inputs:
+  working-directory:
+    description: App directory
+    required: true
+
 runs:
   using: 'composite'
   steps:
@@ -9,7 +14,7 @@ runs:
         pwd
         ls -la
       shell: bash
-      
+
     - name: Cache dependencies
       id: cache
       uses: actions/cache@v3
@@ -21,3 +26,4 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       run: npm ci
       shell: bash
+      working-directory: ${{ inputs.working-directory }}

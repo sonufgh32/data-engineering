@@ -20,6 +20,8 @@ jobs:
 
             - name: Load & cache dependencies
               uses: ./.github/actions/cached-deps/
+              with:
+                working-directory: frontend/github-composite-actions
         
             - name: Lint code
               run: npm run lint
