@@ -34,6 +34,6 @@ runs:
         pwd
         ls -la
         npm ci
-        echo "used-cache=$${{ inputs.caching }}" >> $GITHUB_OUTPUT
+        echo "used-cache=${{ inputs.caching }}" >> $GITHUB_OUTPUT
       shell: bash
       working-directory: ${{ inputs.working-directory }}
