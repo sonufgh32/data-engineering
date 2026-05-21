@@ -64,7 +64,10 @@ jobs:
                 working-directory: ${{ env.WORK_DIR }}
 
             - name: Build website
-              run: npm run build
+              run:
+                npm run build
+                pwd
+                ls -la
             
             - name: Upload artifacts
               uses: actions/upload-artifact@v4
