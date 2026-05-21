@@ -66,14 +66,12 @@ jobs:
             - name: Build website
               run: |
                 npm run build
-                pwd
-                ls -la
             
             - name: Upload artifacts
               uses: actions/upload-artifact@v4
               with:
                 name: dist-files
-                path: dist
+                path: ${{ env.WORK_DIR }}/dist
     
     deploy:
         needs: build
