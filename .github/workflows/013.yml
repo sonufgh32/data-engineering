@@ -64,7 +64,7 @@ jobs:
                 working-directory: ${{ env.WORK_DIR }}
 
             - name: Build website
-              run:
+              run: |
                 npm run build
                 pwd
                 ls -la
