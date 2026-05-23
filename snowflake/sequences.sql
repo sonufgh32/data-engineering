@@ -4,9 +4,17 @@
 -- Database : SAMPLE_ENTERPRISE_DB
 -- =========================================================
 
+USE ROLE DATA_ENGINEER_ROLE;
+
+USE WAREHOUSE DATA_ENGINEER_WH;
+
 USE DATABASE SAMPLE_ENTERPRISE_DB;
 
 USE SCHEMA SALES;
+
+GRANT CREATE SEQUENCE
+ON SCHEMA SAMPLE_ENTERPRISE_DB.SALES
+TO ROLE DATA_ENGINEER_ROLE;
 
 -- =========================================================
 -- 1. CREATE BASIC SEQUENCE
@@ -26,6 +34,10 @@ FROM TABLE(GENERATOR(ROWCOUNT => 10));
 -- =========================================================
 -- 2. USE SEQUENCE IN TABLE INSERT
 -- =========================================================
+
+GRANT CREATE TABLE
+ON SCHEMA SAMPLE_ENTERPRISE_DB.SALES
+TO ROLE DATA_ENGINEER_ROLE;
 
 CREATE OR REPLACE TABLE CUSTOMER_SEQ_TABLE (
     CUSTOMER_ID INT,

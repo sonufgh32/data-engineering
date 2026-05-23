@@ -1,0 +1,7 @@
+{
+    "user": "data_engineer",
+    "account": "dtodzzj-tk32106",
+    "url": "https://dtodzzj-tk32106.snowflakecomputing.com:443",
+    "private_key_file": "C:\\Users\\sonuf\\keys\\rsa_key.p8",
+    "role": "data_engineer_role"
+}

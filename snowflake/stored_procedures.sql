@@ -14,8 +14,10 @@
 -- execute complex workflows and database operations like
 -- INSERT, UPDATE, DELETE, or DDL statements.
 -- =========================================================
-
+USE ROLE ACCOUNTADMIN;
 USE DATABASE SAMPLE_ENTERPRISE_DB;
+GRANT CREATE PROCEDURE ON SCHEMA SAMPLE_ENTERPRISE_DB.SALES
+TO ROLE DATA_ENGINEER_ROLE;
 
 -- =========================================================
 -- SCHEMA : SALES
@@ -55,6 +57,8 @@ BEGIN
 END;
 $$;
 
+SELECT CURRENT_DATABASE(), CURRENT_SCHEMA(), CURRENT_ROLE();
+SHOW TABLES;
 -- Example Usage
 CALL ADD_CUSTOMER(101, 'Rahul Verma', 'rahul@example.com', 'Hyderabad', 'India');
 
