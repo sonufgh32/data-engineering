@@ -1,0 +1,348 @@
+# File: .github/workflows/advanced-workflow-commands-demo.yml
+
+name: 019 - Advanced Workflow Commands Demo
+
+on:
+  workflow_dispatch:
+#   push:
+#     branches:
+#       - main
+
+env:
+  APP_NAME: enterprise-data-platform
+  NODE_VERSION: 20
+  PYTHON_VERSION: 3.12
+
+jobs:
+
+  advanced-demo:
+    name: Advanced Workflow Decorations
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # =========================================================
+      # STEP 1 - Checkout
+      # =========================================================
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # =========================================================
+      # STEP 2 - Workflow Start Notice
+      # =========================================================
+      - name: Workflow Start
+        run: |
+
+          echo "::notice title=Workflow Started::GitHub Actions workflow execution started"
+
+          echo "::group::Workflow Metadata"
+
+          echo "Workflow Name  : $GITHUB_WORKFLOW"
+          echo "Repository     : $GITHUB_REPOSITORY"
+          echo "Actor          : $GITHUB_ACTOR"
+          echo "Branch         : $GITHUB_REF_NAME"
+          echo "Commit SHA     : $GITHUB_SHA"
+          echo "Run ID         : $GITHUB_RUN_ID"
+          echo "Runner OS      : $RUNNER_OS"
+
+          echo "::endgroup::"
+
+      # =========================================================
+      # STEP 3 - Setup NodeJS
+      # =========================================================
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # =========================================================
+      # STEP 4 - Setup Python
+      # =========================================================
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # =========================================================
+      # STEP 5 - Dependency Installation Group
+      # =========================================================
+      - name: Install Dependencies
+        run: |
+
+          echo "::group::Dependency Installation"
+
+          echo "Installing npm dependencies..."
+          sleep 2
+
+          echo "Installing python dependencies..."
+          sleep 2
+
+          echo "::notice::Dependencies installed successfully"
+
+          echo "::endgroup::"
+
+      # =========================================================
+      # STEP 6 - Simulated Build
+      # =========================================================
+      - name: Build Application
+        id: build
+        run: |
+
+          echo "::group::Application Build"
+
+          mkdir -p dist
+
+          echo "<h1>Enterprise Build</h1>" > dist/index.html
+          echo "console.log('Application started');" > dist/app.js
+
+          echo "build_status=SUCCESS" >> $GITHUB_OUTPUT
+          echo "artifact_count=$(find dist -type f | wc -l)" >> $GITHUB_OUTPUT
+
+          echo "::notice title=Build Successful::Application compiled successfully"
+
+          echo "::endgroup::"
+
+      # =========================================================
+      # STEP 7 - Unit Tests
+      # =========================================================
+      - name: Execute Unit Tests
+        id: tests
+        run: |
+
+          echo "::group::Unit Testing"
+
+          echo "Running unit tests..."
+          sleep 2
+
+          echo "TOTAL_TESTS=125" >> $GITHUB_ENV
+          echo "PASSED_TESTS=120" >> $GITHUB_ENV
+          echo "FAILED_TESTS=5" >> $GITHUB_ENV
+
+          echo "::warning file=tests/auth.test.js,line=45,col=10::Deprecated authentication API used"
+
+          echo "::notice::Unit tests completed"
+
+          echo "::endgroup::"
+
+      # =========================================================
+      # STEP 8 - Security Scan
+      # =========================================================
+      - name: Security Scan
+        continue-on-error: true
+        run: |
+
+          echo "::group::Security Analysis"
+
+          echo "Scanning repository..."
+
+          sleep 2
+
+          echo "::error file=src/config.py,line=12,col=1::Hardcoded secret detected"
+
+          echo "::warning file=package.json,line=20::Outdated dependency found"
+
+          echo "::notice::Security scan completed"
+
+          echo "::endgroup::"
+
+      # =========================================================
+      # STEP 9 - Docker Validation
+      # =========================================================
+      - name: Docker Validation
+        run: |
+
+          echo "::group::Docker Validation"
+
+          echo "Checking Dockerfile..."
+
+          sleep 1
+
+          echo "::notice::Docker configuration validated"
+
+          echo "::endgroup::"
+
+      # =========================================================
+      # STEP 10 - Mask Secrets Example
+      # =========================================================
+      - name: Secret Masking Demo
+        run: |
+
+          SECRET_VALUE="super-secret-password"
+
+          echo "::add-mask::$SECRET_VALUE"
+
+          echo "Printing secret:"
+          echo "$SECRET_VALUE"
+
+          echo "::notice::Secret masking demonstration completed"
+
+      # =========================================================
+      # STEP 11 - Debug Logging
+      # =========================================================
+      - name: Debug Logs
+        run: |
+
+          echo "::debug::This is a debug log"
+
+          echo "Normal log output"
+
+      # =========================================================
+      # STEP 12 - Conditional Warning
+      # =========================================================
+      - name: Threshold Validation
+        run: |
+
+          FAILED=5
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::warning title=Test Failures::$FAILED tests failed"
+          fi
+
+      # =========================================================
+      # STEP 13 - Create Outputs
+      # =========================================================
+      - name: Generate Outputs
+        id: outputs
+        run: |
+
+          echo "environment=production" >> $GITHUB_OUTPUT
+          echo "deploy_version=2.5.${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+          echo "deployment_region=ap-south-1" >> $GITHUB_OUTPUT
+
+      # =========================================================
+      # STEP 14 - Consume Outputs
+      # =========================================================
+      - name: Read Outputs
+        run: |
+
+          echo "::group::Workflow Outputs"
+
+          echo "Environment      : ${{ steps.outputs.outputs.environment }}"
+          echo "Deploy Version   : ${{ steps.outputs.outputs.deploy_version }}"
+          echo "Region           : ${{ steps.outputs.outputs.deployment_region }}"
+
+          echo "::endgroup::"
+
+      # =========================================================
+      # STEP 15 - Stop Workflow Commands Example
+      # =========================================================
+      - name: Stop Commands Demo
+        run: |
+
+          echo "::stop-commands::pause"
+
+          echo "::warning::This warning will NOT be interpreted"
+
+          echo "::pause::"
+
+          echo "::notice::Workflow commands enabled again"
+
+      # =========================================================
+      # STEP 16 - Create Logs
+      # =========================================================
+      - name: Generate Log Files
+        run: |
+
+          mkdir -p logs
+
+          echo "Application logs" > logs/app.log
+          echo "Security logs" > logs/security.log
+          echo "Deployment logs" > logs/deploy.log
+
+      # =========================================================
+      # STEP 17 - Upload Artifacts
+      # =========================================================
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-build
+          path: dist/
+
+      - name: Upload Logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: execution-logs
+          path: logs/
+
+      # =========================================================
+      # STEP 18 - Massive Step Summary
+      # =========================================================
+      - name: Generate Workflow Summary
+        run: |
+
+          echo "# 🚀 Enterprise CI/CD Workflow Summary" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "---" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## 📌 Workflow Metadata" >> $GITHUB_STEP_SUMMARY
+
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Workflow | $GITHUB_WORKFLOW |" >> $GITHUB_STEP_SUMMARY
+          echo "| Repository | $GITHUB_REPOSITORY |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | $GITHUB_REF_NAME |" >> $GITHUB_STEP_SUMMARY
+          echo "| Actor | $GITHUB_ACTOR |" >> $GITHUB_STEP_SUMMARY
+          echo "| Run Number | $GITHUB_RUN_NUMBER |" >> $GITHUB_STEP_SUMMARY
+          echo "| Runner OS | $RUNNER_OS |" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## 🏗️ Build Results" >> $GITHUB_STEP_SUMMARY
+
+          echo "| Metric | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Status | ${{ steps.build.outputs.build_status }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Generated Artifacts | ${{ steps.build.outputs.artifact_count }} |" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## 🧪 Test Metrics" >> $GITHUB_STEP_SUMMARY
+
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Tests | $TOTAL_TESTS |" >> $GITHUB_STEP_SUMMARY
+          echo "| Passed Tests | $PASSED_TESTS |" >> $GITHUB_STEP_SUMMARY
+          echo "| Failed Tests | $FAILED_TESTS |" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## 📂 Artifacts" >> $GITHUB_STEP_SUMMARY
+
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          find dist >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## 🌍 Deployment Outputs" >> $GITHUB_STEP_SUMMARY
+
+          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ steps.outputs.outputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | ${{ steps.outputs.outputs.deploy_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Region | ${{ steps.outputs.outputs.deployment_region }} |" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## ✅ Final Status" >> $GITHUB_STEP_SUMMARY
+
+          echo "- ✅ Build Completed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Tests Executed" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚠️ Security Warnings Found" >> $GITHUB_STEP_SUMMARY
+          echo "- 📦 Artifacts Uploaded" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "> Generated using GitHub Actions Workflow Commands and Step Summary" >> $GITHUB_STEP_SUMMARY
+
+      # =========================================================
+      # STEP 19 - Final Notice
+      # =========================================================
+      - name: Workflow Completion
+        run: |
+
+          echo "::notice title=Workflow Completed::All stages executed successfully"
