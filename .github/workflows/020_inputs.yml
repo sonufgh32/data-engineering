@@ -1,0 +1,290 @@
+name: 020 - Enterprise Inputs Demo Workflow
+
+on:
+    workflow_dispatch:
+        inputs:
+            # ======================================================
+            # STRING INPUT
+            # ======================================================
+            application_name:
+                description: "Application Name"
+                required: true
+                default: "customer-portal"
+                type: string
+
+            # ======================================================
+            # CHOICE INPUT
+            # ======================================================
+            deployment_environment:
+                description: "Select Deployment Environment"
+                required: true
+                type: choice
+                options:
+                - dev
+                - qa
+                - stage
+                - prod
+
+            # ======================================================
+            # BOOLEAN INPUT
+            # ======================================================
+            run_tests:
+                description: "Execute Test Cases"
+                required: true
+                default: true
+                type: boolean
+
+            # ======================================================
+            # NUMBER INPUT
+            # ======================================================
+            replica_count:
+                description: "Number of Replicas"
+                required: true
+                default: 2
+                type: number
+
+            # ======================================================
+            # ENVIRONMENT INPUT
+            # ======================================================
+            target_environment:
+                description: "GitHub Environment"
+                required: true
+                type: environment
+
+            # ======================================================
+            # EXTRA CHOICE INPUT
+            # ======================================================
+            aws_region:
+                description: "AWS Deployment Region"
+                required: true
+                type: choice
+                options:
+                - ap-south-1
+                - us-east-1
+                - eu-west-1
+
+            # ======================================================
+            # EXTRA BOOLEAN INPUT
+            # ======================================================
+            enable_security_scan:
+                description: "Run Security Scan"
+                required: true
+                default: true
+                type: boolean
+
+            # ======================================================
+            # EXTRA STRING INPUT
+            # ======================================================
+            docker_image_tag:
+                description: "Docker Image Tag"
+                required: true
+                default: "latest"
+                type: string
+
+jobs:
+    enterprise-demo:
+        name: Enterprise Deployment Pipeline
+        runs-on: ubuntu-latest
+        environment:
+            name: ${{ inputs.target_environment }}
+
+        env:
+            APP_NAME: ${{ inputs.application_name }}
+            ENVIRONMENT: ${{ inputs.deployment_environment }}
+            REGION: ${{ inputs.aws_region }}
+
+        steps:
+            # ======================================================
+            # STEP 1 - CHECKOUT
+            # ======================================================
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            # ======================================================
+            # STEP 2 - PRINT INPUTS
+            # ======================================================
+            - name: Display Workflow Inputs
+              run: |
+                echo "::group::Workflow Inputs"
+
+                echo "Application Name      : ${{ inputs.application_name }}"
+                echo "Deployment Environment: ${{ inputs.deployment_environment }}"
+                echo "Run Tests             : ${{ inputs.run_tests }}"
+                echo "Replica Count         : ${{ inputs.replica_count }}"
+                echo "Target Environment    : ${{ inputs.target_environment }}"
+                echo "AWS Region            : ${{ inputs.aws_region }}"
+                echo "Security Scan Enabled : ${{ inputs.enable_security_scan }}"
+                echo "Docker Image Tag      : ${{ inputs.docker_image_tag }}"
+
+                echo "::endgroup::"
+
+            # ======================================================
+            # STEP 3 - SETUP NODEJS
+            # ======================================================
+            - name: Setup NodeJS
+              uses: actions/setup-node@v4
+              with:
+                node-version: 20
+
+            # ======================================================
+            # STEP 4 - BUILD APPLICATION
+            # ======================================================
+            - name: Build Application
+              id: build
+              run: |
+                echo "::group::Application Build"
+
+                mkdir -p dist
+                echo "<h1>${{ inputs.application_name }}</h1>" > dist/index.html
+                echo "Build completed successfully"
+                echo "build_status=SUCCESS" >> $GITHUB_OUTPUT
+                echo "::notice title=Build Successful::Application build completed"
+
+                echo "::endgroup::"
+
+            # ======================================================
+            # STEP 5 - CONDITIONAL TEST EXECUTION
+            # ======================================================
+            - name: Run Unit Tests
+              if: ${{ inputs.run_tests }}
+              run: |
+                echo "::group::Unit Tests"
+
+                echo "Running tests..."
+                sleep 2
+                echo "120 tests executed"
+
+                echo "::notice::All tests executed"
+
+                echo "::endgroup::"
+
+            # ======================================================
+            # STEP 6 - CONDITIONAL SECURITY SCAN
+            # ======================================================
+            - name: Security Scan
+              if: ${{ inputs.enable_security_scan }}
+              continue-on-error: true
+              run: |
+
+                echo "::group::Security Scan"
+                echo "Scanning application..."
+                sleep 2
+
+                echo "::warning file=package.json,line=12::Outdated dependency detected"
+                echo "::notice::Security scan completed"
+                echo "::endgroup::"
+
+            # ======================================================
+            # STEP 7 - DOCKER BUILD
+            # ======================================================
+            - name: Docker Build
+              run: |
+                echo "::group::Docker Build"
+
+                echo "Building Docker image..."
+                docker_image="${{ inputs.application_name }}:${{ inputs.docker_image_tag }}"
+                echo "Docker Image: $docker_image"
+                echo "::notice::Docker image prepared"
+
+                echo "::endgroup::"
+
+            # ======================================================
+            # STEP 8 - DEPLOYMENT SIMULATION
+            # ======================================================
+            - name: Deployment Stage
+              run: |
+                echo "::group::Deployment"
+
+                echo "Deploying application..."
+                echo "Environment : ${{ inputs.deployment_environment }}"
+                echo "Region      : ${{ inputs.aws_region }}"
+                echo "Replicas    : ${{ inputs.replica_count }}"
+                sleep 2
+                echo "::notice title=Deployment Successful::Application deployed successfully"
+
+                echo "::endgroup::"
+
+            # ======================================================
+            # STEP 9 - CONDITIONAL PRODUCTION LOGIC
+            # ======================================================
+            - name: Production Validation
+              if: ${{ inputs.deployment_environment == 'prod' }}
+              run: |
+                echo "::group::Production Checks"
+
+                echo "Running production validations..."
+                sleep 2
+                echo "::warning::Production deployment requires approval"
+
+                echo "::endgroup::"
+
+            # ======================================================
+            # STEP 10 - GENERATE ARTIFACTS
+            # ======================================================
+            - name: Create Deployment Logs
+              run: |
+                mkdir -p logs
+                echo "Deployment logs" > logs/deployment.log
+                echo "Security logs" > logs/security.log
+
+            # ======================================================
+            # STEP 11 - UPLOAD ARTIFACTS
+            # ======================================================
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                name: deployment-logs
+                path: logs/
+
+            # ======================================================
+            # STEP 12 - STEP SUMMARY
+            # ======================================================
+            - name: Generate Workflow Summary
+              run: |
+                echo "# 🚀 Enterprise Deployment Summary" >> $GITHUB_STEP_SUMMARY
+                echo "" >> $GITHUB_STEP_SUMMARY
+
+                echo "## 📌 Workflow Inputs" >> $GITHUB_STEP_SUMMARY
+
+                echo "| Input | Value |" >> $GITHUB_STEP_SUMMARY
+                echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+                echo "| Application Name | ${{ inputs.application_name }} |" >> $GITHUB_STEP_SUMMARY
+                echo "| Environment | ${{ inputs.deployment_environment }} |" >> $GITHUB_STEP_SUMMARY
+                echo "| Run Tests | ${{ inputs.run_tests }} |" >> $GITHUB_STEP_SUMMARY
+                echo "| Replicas | ${{ inputs.replica_count }} |" >> $GITHUB_STEP_SUMMARY
+                echo "| AWS Region | ${{ inputs.aws_region }} |" >> $GITHUB_STEP_SUMMARY
+                echo "| Docker Tag | ${{ inputs.docker_image_tag }} |" >> $GITHUB_STEP_SUMMARY
+                echo "| Security Scan | ${{ inputs.enable_security_scan }} |" >> $GITHUB_STEP_SUMMARY
+
+                echo "" >> $GITHUB_STEP_SUMMARY
+
+                echo "## 🏗️ Build Results" >> $GITHUB_STEP_SUMMARY
+
+                echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+                echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+                echo "| Build Status | ${{ steps.build.outputs.build_status }} |" >> $GITHUB_STEP_SUMMARY
+                echo "| Deployment Region | ${{ inputs.aws_region }} |" >> $GITHUB_STEP_SUMMARY
+
+                echo "" >> $GITHUB_STEP_SUMMARY
+
+                echo "## 📂 Generated Files" >> $GITHUB_STEP_SUMMARY
+
+                echo '```text' >> $GITHUB_STEP_SUMMARY
+                find . -maxdepth 2 -type f >> $GITHUB_STEP_SUMMARY
+                echo '```' >> $GITHUB_STEP_SUMMARY
+
+                echo "" >> $GITHUB_STEP_SUMMARY
+
+                echo "## ✅ Final Status" >> $GITHUB_STEP_SUMMARY
+
+                echo "- ✅ Build Completed" >> $GITHUB_STEP_SUMMARY
+                echo "- ✅ Deployment Completed" >> $GITHUB_STEP_SUMMARY
+                echo "- 📦 Artifacts Uploaded" >> $GITHUB_STEP_SUMMARY
+
+            # ======================================================
+            # STEP 13 - FINAL NOTICE
+            # ======================================================
+            - name: Workflow Completed
+              run: |
+
+                echo "::notice title=Workflow Completed::Enterprise pipeline execution completed successfully"
