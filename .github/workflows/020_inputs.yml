@@ -59,7 +59,7 @@ on:
                 description: "AWS Deployment Region"
                 required: true
                 type: choice
-                value: ap-south-1
+                value: ap-south-22222
                 options:
                 - ap-south-1
                 - us-east-1
