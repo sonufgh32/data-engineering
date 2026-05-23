@@ -1,4 +1,4 @@
-name: 020 - Enterprise Inputs Demo Workflow
+name: 020 - Inputs Demo Workflow
 
 on:
     workflow_dispatch:
@@ -9,6 +9,7 @@ on:
             application_name:
                 description: "Application Name"
                 required: true
+                value: value-test
                 default: "customer-portal"
                 type: string
 
@@ -58,6 +59,7 @@ on:
                 description: "AWS Deployment Region"
                 required: true
                 type: choice
+                value: ap-south-1
                 options:
                 - ap-south-1
                 - us-east-1
