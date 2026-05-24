@@ -1,0 +1,125 @@
+name: 021 - Release Workflow
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: "Release version (example: v1.0.0)"
+                required: true
+                type: string
+
+permissions:
+    contents: write
+
+env:
+    DEFAULT_BRANCH: main
+
+jobs:
+    create-release:
+        name: Create Release
+        runs-on: ubuntu-latest
+
+        outputs:
+            release_tag: ${{ steps.tag.outputs.release_tag }}
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+              with:
+                fetch-depth: 0
+
+            - name: Display Workflow Context
+              run: |
+                echo "Repository      : ${{ github.repository }}"
+                echo "Branch          : ${{ github.ref_name }}"
+                echo "Actor           : ${{ github.actor }}"
+                echo "Triggering User : ${{ github.triggering_actor }}"
+                echo "Run Number      : ${{ github.run_number }}"
+
+            - name: Configure Git
+              run: |
+                git config user.name "${{ github.actor }}"
+                git config user.email "${{ github.actor }}@users.noreply.github.com"
+
+            - name: Generate Release Tag
+              id: tag
+              run: |
+                TAG="${{ github.event.inputs.version }}-${{ github.actor }}"
+                echo "::group::Generated Tag: $TAG"
+                echo "RELEASE_TAG=$TAG" >> $GITHUB_ENV
+                echo "release_tag=$TAG" >> $GITHUB_OUTPUT
+                echo "::endgroup::"
+
+            - name: Check If Tag Already Exists
+              run: |
+                if git rev-parse "${{ env.RELEASE_TAG }}" >/dev/null 2>&1; then
+                    echo "Tag already exists!"
+                    exit 1
+                fi
+            
+            - name: Create Git Tag
+              run: |
+                git tag -a "${{ env.RELEASE_TAG }}" -m "Release created by ${{ github.actor }}"
+                git push origin "${{ env.RELEASE_TAG }}"
+
+            - name: Generate Release Notes
+              run: |
+                {
+                    echo "# 🚀 Release ${{ env.RELEASE_TAG }}"
+                    echo ""
+                    echo "## Metadata"
+                    echo "- Triggered By: @${{ github.actor }}"
+                    echo "- Repository: ${{ github.repository }}"
+                    echo "- Workflow Run: #${{ github.run_number }}"
+                    echo "- Commit SHA: ${{ github.sha }}"
+                    echo ""
+                    echo "## Recent Changes"
+                    echo ""
+
+                    git log -10 --pretty=format:"- %s (%an)" || true
+                } > RELEASE_NOTES.md
+
+            - name: Create GitHub Release
+              id: release
+              uses: softprops/action-gh-release@v2
+              with:
+                tag_name: ${{ env.RELEASE_TAG }}
+                name: Release ${{ env.RELEASE_TAG }}
+                body_path: RELEASE_NOTES.md
+                draft: false
+                prerelease: false
+                generate_release_notes: true
+
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Upload Release Notes Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: release-notes
+                path: RELEASE_NOTES.md
+
+            - name: Add Workflow Summary
+              run: |
+                {
+                    echo "# ✅ Release Created"
+                    echo ""
+                    echo "| Property | Value |"
+                    echo "|---|---|"
+                    echo "| Release Tag | \`${{ env.RELEASE_TAG }}\` |"
+                    echo "| Triggered By | \`${{ github.actor }}\` |"
+                    echo "| Repository | \`${{ github.repository }}\` |"
+                    echo "| Commit SHA | \`${{ github.sha }}\` |"
+                    echo "| Run Number | \`${{ github.run_number }}\` |"
+                } >> $GITHUB_STEP_SUMMARY
+
+    notify:
+        name: Post Release Information
+        needs: create-release
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Print Release Details
+              run: |
+                echo "Release Created Successfully"
+                echo "Tag: ${{ needs.create-release.outputs.release_tag }}"
