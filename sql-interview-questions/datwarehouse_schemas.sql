@@ -1,0 +1,181 @@
+-- ⭐ Star Schema (Simple & Fast)
+--      A Star Schema is a denormalized data model where:
+--      A central FACT table stores measurable business data (sales, revenue, quantity).
+--      Multiple DIMENSION tables directly connect to the fact table.
+--      Dimensions are not normalized (flat tables).
+-- 🔹 Key Points
+--      Simple design
+--      Faster query performance (fewer joins)
+--      Easy to understand
+--      Mostly used in BI and reporting
+-- ⭐ Shape:
+--      FACT table in center → DIMENSION tables around it (like a star)
+
+-- CUSTOMER DIMENSION
+-- CREATE TABLE DIM_CUSTOMER (
+--     CUSTOMER_KEY NUMBER PRIMARY KEY,
+--     CUSTOMER_ID VARCHAR2(20),
+--     CUSTOMER_NAME VARCHAR2(100),
+--     CUSTOMER_CITY VARCHAR2(50),
+--     CUSTOMER_STATE VARCHAR2(50)
+-- );
+
+-- PRODUCT DIMENSION
+-- CREATE TABLE DIM_PRODUCT (
+--     PRODUCT_KEY NUMBER PRIMARY KEY,
+--     PRODUCT_ID VARCHAR2(20),
+--     PRODUCT_NAME VARCHAR2(100),
+--     CATEGORY VARCHAR2(50)
+-- );
+
+-- DATE DIMENSION
+-- CREATE TABLE DIM_DATE (
+--     DATE_KEY NUMBER PRIMARY KEY,
+--     FULL_DATE DATE,
+--     YEAR NUMBER,
+--     MONTH NUMBER,
+--     DAY NUMBER
+-- );
+
+-- STORE DIMENSION
+-- CREATE TABLE DIM_STORE (
+--     STORE_KEY NUMBER PRIMARY KEY,
+--     STORE_ID VARCHAR2(20),
+--     STORE_NAME VARCHAR2(100),
+--     STORE_CITY VARCHAR2(50)
+-- );
+
+-- FACT SALES TABLE
+-- CREATE TABLE FACT_SALES (
+--     SALES_KEY NUMBER PRIMARY KEY,
+--     CUSTOMER_KEY NUMBER,
+--     PRODUCT_KEY NUMBER,
+--     DATE_KEY NUMBER,
+--     STORE_KEY NUMBER,
+--     QUANTITY_SOLD NUMBER,
+--     TOTAL_AMOUNT NUMBER,
+--     CONSTRAINT fk_customer FOREIGN KEY (CUSTOMER_KEY) REFERENCES DIM_CUSTOMER(CUSTOMER_KEY),
+--     CONSTRAINT fk_product FOREIGN KEY (PRODUCT_KEY) REFERENCES DIM_PRODUCT(PRODUCT_KEY),
+--     CONSTRAINT fk_date FOREIGN KEY (DATE_KEY) REFERENCES DIM_DATE(DATE_KEY),
+--     CONSTRAINT fk_store FOREIGN KEY (STORE_KEY) REFERENCES DIM_STORE(STORE_KEY)
+-- );
+
+-- DIM_CUSTOMER
+-- INSERT INTO DIM_CUSTOMER VALUES (1, 'C001', 'Amit Sharma', 'Mumbai', 'MH');
+-- INSERT INTO DIM_CUSTOMER VALUES (2, 'C002', 'Riya Singh', 'Pune', 'MH');
+
+-- DIM_PRODUCT
+-- INSERT INTO DIM_PRODUCT VALUES (1, 'P001', 'Laptop', 'Electronics');
+-- INSERT INTO DIM_PRODUCT VALUES (2, 'P002', 'Mobile', 'Electronics');
+
+-- DIM_DATE
+-- INSERT INTO DIM_DATE VALUES (20250101, DATE '2025-01-01', 2025, 1, 1);
+-- INSERT INTO DIM_DATE VALUES (20250102, DATE '2025-01-02', 2025, 1, 2);
+
+-- DIM_STORE
+-- INSERT INTO DIM_STORE VALUES (1, 'S001', 'Mumbai Store', 'Mumbai');
+-- INSERT INTO DIM_STORE VALUES (2, 'S002', 'Delhi Store', 'Delhi');
+
+-- FACT_SALES
+-- INSERT INTO FACT_SALES VALUES (1, 1, 1, 20250101, 1, 2, 120000);
+-- INSERT INTO FACT_SALES VALUES (2, 2, 2, 20250102, 2, 1, 50000);
+
+-- COMMIT;
+
+SELECT * FROM DIM_CUSTOMER;
+SELECT * FROM DIM_PRODUCT;
+SELECT * FROM DIM_DATE;
+SELECT * FROM DIM_STORE;
+SELECT * FROM FACT_SALES;
+
+
+-- ❄️ Snowflake Schema (Normalized)
+--      A Snowflake Schema is a normalized version of a star schema where:
+--      Dimensions are split into sub-dimensions.
+--      Data is stored in multiple related tables.
+--      Reduces data redundancy.
+-- 🔹 Key Points
+--      More normalized → saves storage
+--      More joins → slightly slower
+--      More complex structure
+--      Used when dimension data is large and repetitive
+-- ❄️ Shape:
+--      FACT table → DIMENSION → SUB-DIMENSIONS (snowflake-like structure)
+
+-- CUSTOMER DIMENSION SUB-DIMENSIONS
+-- CITY SUB-DIMENSION
+-- CREATE TABLE DIM_CITY (
+--     CITY_KEY NUMBER PRIMARY KEY,
+--     CITY_NAME VARCHAR2(50),
+--     STATE_NAME VARCHAR2(50)
+-- );
+
+-- PRODUCT CATEGORY SUB-DIMENSION
+-- CREATE TABLE DIM_CATEGORY (
+--     CATEGORY_KEY NUMBER PRIMARY KEY,
+--     CATEGORY_NAME VARCHAR2(50)
+-- );
+
+-- CUSTOMER DIMENSION (Snowflake normalized)
+-- CREATE TABLE DIM_CUSTOMER_SF (
+--     CUSTOMER_KEY NUMBER PRIMARY KEY,
+--     CUSTOMER_ID VARCHAR2(20),
+--     CUSTOMER_NAME VARCHAR2(100),
+--     CITY_KEY NUMBER,
+--     CONSTRAINT fk_city FOREIGN KEY (CITY_KEY) REFERENCES DIM_CITY(CITY_KEY)
+-- );
+
+-- PRODUCT DIMENSION (Normalized)
+-- CREATE TABLE DIM_PRODUCT_SF (
+--     PRODUCT_KEY NUMBER PRIMARY KEY,
+--     PRODUCT_ID VARCHAR2(20),
+--     PRODUCT_NAME VARCHAR2(100),
+--     CATEGORY_KEY NUMBER,
+--     CONSTRAINT fk_category FOREIGN KEY (CATEGORY_KEY) REFERENCES DIM_CATEGORY(CATEGORY_KEY)
+-- );
+
+-- CREATE TABLE FACT_SALES_SF (
+--     SALES_KEY NUMBER PRIMARY KEY,
+--     CUSTOMER_KEY NUMBER,
+--     PRODUCT_KEY NUMBER,
+--     DATE_KEY NUMBER,
+--     STORE_KEY NUMBER,
+--     QUANTITY_SOLD NUMBER,
+--     TOTAL_AMOUNT NUMBER,
+--     CONSTRAINT fk_customer_sf FOREIGN KEY (CUSTOMER_KEY) REFERENCES DIM_CUSTOMER_SF(CUSTOMER_KEY),
+--     CONSTRAINT fk_product_sf FOREIGN KEY (PRODUCT_KEY) REFERENCES DIM_PRODUCT_SF(PRODUCT_KEY),
+--     CONSTRAINT fk_date_sf FOREIGN KEY (DATE_KEY) REFERENCES DIM_DATE(DATE_KEY),
+--     CONSTRAINT fk_store_sf FOREIGN KEY (STORE_KEY) REFERENCES DIM_STORE(STORE_KEY)
+-- );
+
+-- DIM_CITY
+-- INSERT INTO DIM_CITY VALUES (1, 'Mumbai', 'MH');
+-- INSERT INTO DIM_CITY VALUES (2, 'Pune', 'MH');
+
+-- DIM_CATEGORY
+-- INSERT INTO DIM_CATEGORY VALUES (1, 'Electronics');
+-- INSERT INTO DIM_CATEGORY VALUES (2, 'Home Appliances');
+
+-- DIM_CUSTOMER_SF
+-- INSERT INTO DIM_CUSTOMER_SF VALUES (1, 'C001', 'Amit Sharma', 1);
+-- INSERT INTO DIM_CUSTOMER_SF VALUES (2, 'C002', 'Riya Singh', 2);
+
+-- DIM_PRODUCT_SF
+-- INSERT INTO DIM_PRODUCT_SF VALUES (1, 'P001', 'Laptop', 1);
+-- INSERT INTO DIM_PRODUCT_SF VALUES (2, 'P002', 'Mobile', 1);
+
+-- INSERT INTO FACT_SALES_SF (
+--     SALES_KEY, CUSTOMER_KEY, PRODUCT_KEY, DATE_KEY, STORE_KEY,
+--     QUANTITY_SOLD, TOTAL_AMOUNT
+-- )
+-- VALUES (
+--     1, 1, 1, 20250101, 1, 2, 120000
+-- );
+
+-- COMMIT;
+
+SELECT * FROM DIM_CITY;
+SELECT * FROM DIM_CATEGORY;
+SELECT * FROM DIM_CUSTOMER_SF;
+SELECT * FROM DIM_PRODUCT_SF;
+SELECT * FROM FACT_SALES_SF;
