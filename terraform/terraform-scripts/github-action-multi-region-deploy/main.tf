@@ -52,11 +52,5 @@ resource "aws_lambda_function" "app" {
 }
 
 terraform {
-  backend "s3" {
-    bucket         = "terraform-state-741448939728"
-    key            = "github-action-multi-region-deploy/terraform.tfstate"
-    region         = "ap-south-1"
-    dynamodb_table = "terraform-locks"
-    encrypt        = true
-  }
+  backend "s3" {}
 }
