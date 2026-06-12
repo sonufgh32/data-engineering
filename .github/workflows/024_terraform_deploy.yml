@@ -51,7 +51,35 @@ permissions:
     id-token: write
 
 jobs:
+    account-info:
+        name: Get AWS account info
+        runs-on: ubuntu-latest
+
+        outputs:
+            account_id: ${{ steps.aws_account.outputs.account_id }}
+            account_alias: ${{ steps.aws_account.outputs.account_alias }}
+
+        steps:
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v1.7.0
+              with:
+                role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+                aws-region: ${{ inputs.aws_region }}
+                role-session-name: github-actions-terraform-deploy
+
+            - name: Get AWS account details from OIDC session
+              id: aws_account
+              run: |
+                ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+                ACCOUNT_ALIAS=$(aws iam list-account-aliases --query 'AccountAliases[0]' --output text 2>/dev/null || true)
+
+                echo "account_id=$ACCOUNT_ID" >> "$GITHUB_OUTPUT"
+                echo "account_alias=${ACCOUNT_ALIAS:-$ACCOUNT_ID}" >> "$GITHUB_OUTPUT"
+                echo "AWS account ID: $ACCOUNT_ID"
+                echo "AWS account alias: ${ACCOUNT_ALIAS:-$ACCOUNT_ID}"
+
     terraform-plan:
+        needs: account-info
         name: Terraform Plan
         runs-on: ubuntu-latest
 
@@ -75,23 +103,12 @@ jobs:
                 aws-region: ${{ inputs.aws_region }}
                 role-session-name: github-actions-terraform-deploy
 
-            - name: Get AWS account details from OIDC session
-              id: aws_account
-              run: |
-                ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-                ACCOUNT_ALIAS=$(aws iam list-account-aliases --query 'AccountAliases[0]' --output text 2>/dev/null || true)
-
-                echo "account_id=$ACCOUNT_ID" >> "$GITHUB_OUTPUT"
-                echo "account_alias=${ACCOUNT_ALIAS:-$ACCOUNT_ID}" >> "$GITHUB_OUTPUT"
-                echo "AWS account ID: $ACCOUNT_ID"
-                echo "AWS account alias: ${ACCOUNT_ALIAS:-$ACCOUNT_ID}"
-
             - name: Terraform Init
               working-directory: ${{ inputs.terraform_path }}
               run: |
                 terraform init -input=false \
                     -backend-config="bucket=terraform-state-741448939728" \
-                    -backend-config="key=${{ steps.aws_account.outputs.account_alias }}/${{ inputs.aws_region }}/terraform.tfstate" \
+                    -backend-config="key=${{ needs.account-info.outputs.account_alias }}/${{ inputs.aws_region }}/terraform.tfstate" \
                     -backend-config="region=${{ inputs.aws_region }}" \
                     -backend-config="use_lockfile=true" \
                     -backend-config="encrypt=true"
@@ -112,18 +129,28 @@ jobs:
               if: always()
               run: |
                 {
-                  echo '## Terraform Plan Summary'
+                  echo '## ✨ Terraform Plan Summary'
                   echo ''
+                  echo '### 📋 Run Details'
+                  echo "- Workflow: ${{ github.workflow }}"
+                  echo "- Run ID: ${{ github.run_id }}"
+                  echo "- Run Number: ${{ github.run_number }}"
+                  echo "- Triggered by: ${{ github.actor }}"
+                  echo "- Commit: ${{ github.sha }}"
                   echo "- Action selected: ${{ inputs.tf_action }}"
                   echo "- Terraform path: ${{ inputs.terraform_path }}"
                   echo "- AWS region: ${{ inputs.aws_region }}"
                   echo "- Environment: ${{ inputs.environment }}"
                   echo "- Lambda resource prefix: ${{ inputs.lambda_name }}"
+                  echo "- AWS account alias: ${{ needs.account-info.outputs.account_alias }}"
+                  echo ''
+                  echo '### 🚀 Next Step'
+                  echo 'Use the apply job when you are ready to provision the changes.'
                 } >> "$GITHUB_STEP_SUMMARY"
 
     terraform-apply:
         name: Terraform Apply
-        needs: terraform-plan
+        needs: [account-info, terraform-plan]
         if: ${{ inputs.tf_action == 'apply' }}
         runs-on: ubuntu-latest
 
@@ -152,7 +179,7 @@ jobs:
               run: |
                 terraform init -input=false \
                     -backend-config="bucket=terraform-state-741448939728" \
-                    -backend-config="key=${{ inputs.aws_region }}/terraform.tfstate" \
+                    -backend-config="key=${{ needs.account-info.outputs.account_alias }}/${{ inputs.aws_region }}/terraform.tfstate" \
                     -backend-config="region=${{ inputs.aws_region }}" \
                     -backend-config="use_lockfile=true" \
                     -backend-config="encrypt=true"
@@ -169,16 +196,27 @@ jobs:
               if: always()
               run: |
                 {
-                  echo '## Terraform Apply Summary'
+                  echo '## ✅ Terraform Apply Summary'
                   echo ''
-                  echo "- Applied from: ${{ inputs.terraform_path }}"
-                  echo "- Region: ${{ inputs.aws_region }}"
+                  echo '### 📦 Deployment Details'
+                  echo "- Workflow: ${{ github.workflow }}"
+                  echo "- Run ID: ${{ github.run_id }}"
+                  echo "- Run Number: ${{ github.run_number }}"
+                  echo "- Triggered by: ${{ github.actor }}"
+                  echo "- Commit: ${{ github.sha }}"
+                  echo "- Terraform path: ${{ inputs.terraform_path }}"
+                  echo "- AWS region: ${{ inputs.aws_region }}"
                   echo "- Environment: ${{ inputs.environment }}"
+                  echo "- Lambda resource prefix: ${{ inputs.lambda_name }}"
+                  echo "- AWS account alias: ${{ needs.account-info.outputs.account_alias }}"
+                  echo ''
+                  echo '### 🎯 Result'
+                  echo 'The apply job has finished. Review the Terraform logs above for the exact resource changes.'
                 } >> "$GITHUB_STEP_SUMMARY"
 
     terraform-destroy:
         name: Terraform Destroy
-        needs: terraform-plan
+        needs: [account-info, terraform-plan]
         if: ${{ inputs.tf_action == 'destroy' }}
         runs-on: ubuntu-latest
 
@@ -207,7 +245,7 @@ jobs:
               run: |
                 terraform init -input=false \
                     -backend-config="bucket=terraform-state-741448939728" \
-                    -backend-config="key=${{ inputs.aws_region }}/terraform.tfstate" \
+                    -backend-config="key=${{ needs.account-info.outputs.account_alias }}/${{ inputs.aws_region }}/terraform.tfstate" \
                     -backend-config="region=${{ inputs.aws_region }}" \
                     -backend-config="use_lockfile=true" \
                     -backend-config="encrypt=true"
@@ -224,9 +262,20 @@ jobs:
               if: always()
               run: |
                 {
-                  echo '## Terraform Destroy Summary'
+                  echo '## 🧹 Terraform Destroy Summary'
                   echo ''
-                  echo "- Destroyed from: ${{ inputs.terraform_path }}"
-                  echo "- Region: ${{ inputs.aws_region }}"
+                  echo '### ⚠️ Destruction Details'
+                  echo "- Workflow: ${{ github.workflow }}"
+                  echo "- Run ID: ${{ github.run_id }}"
+                  echo "- Run Number: ${{ github.run_number }}"
+                  echo "- Triggered by: ${{ github.actor }}"
+                  echo "- Commit: ${{ github.sha }}"
+                  echo "- Terraform path: ${{ inputs.terraform_path }}"
+                  echo "- AWS region: ${{ inputs.aws_region }}"
                   echo "- Environment: ${{ inputs.environment }}"
+                  echo "- Lambda resource prefix: ${{ inputs.lambda_name }}"
+                  echo "- AWS account alias: ${{ needs.account-info.outputs.account_alias }}"
+                  echo ''
+                  echo '### 🎯 Result'
+                  echo 'The destroy job has completed. Confirm the teardown outcome in the Terraform logs above.'
                 } >> "$GITHUB_STEP_SUMMARY"

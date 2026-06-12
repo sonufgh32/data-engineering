@@ -23,12 +23,18 @@ resource "aws_iam_role_policy_attachment" "basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/etl"
+  output_path = "${path.module}/lambda.zip"
+}
+
 resource "aws_lambda_function" "app" {
 
   function_name = "${var.lambda_name}-${var.environment}"
 
-  filename         = "lambda.zip"
-  source_code_hash = filebase64sha256("lambda.zip")
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
   role    = aws_iam_role.lambda_role.arn
   handler = "lambda_function.lambda_handler"
