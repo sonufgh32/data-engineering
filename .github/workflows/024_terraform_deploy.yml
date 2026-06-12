@@ -1,0 +1,123 @@
+name: 024 - Terraform Actions
+
+on:
+    workflow_dispatch:
+        inputs:
+            terraform_path:
+                description: 'Terraform folder to deploy from (relative to data-engineering/)'
+                required: true
+                default: 'terraform/terraform-scripts/github-action-multi-region-deploy'
+                type: string
+            aws_region:
+                description: 'AWS region for the deployment'
+                required: true
+                default: 'ap-south-1'
+                type: choice
+                options:
+                    - us-east-1
+                    - us-west-2
+                    - eu-west-1
+                    - ap-south-1
+            environment:
+                description: 'Environment name (for example: dev/test/prod)'
+                required: true
+                default: 'dev'
+                type: choice
+                options:
+                    - dev
+                    - test
+                    - prod
+            lambda_name:
+                description: 'Lambda resource name prefix'
+                required: true
+                default: 'development'
+                type: choice
+                options:
+                    - testing
+                    - development
+                    - production
+            tf_action:
+                description: 'Terraform action to run'
+                required: true
+                default: 'plan'
+                type: choice
+                options:
+                    - plan
+                    - apply
+                    - destroy
+
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+    deploy:
+        name: Deploy Terraform
+        runs-on: ubuntu-latest
+
+        defaults:
+            run:
+                shell: bash
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                terraform_version: latest
+
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v1.7.0
+              with:
+                role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+                aws-region: ${{ inputs.aws_region }}
+                role-session-name: github-actions-terraform-deploy
+
+            - name: Get AWS account ID from OIDC session
+              id: aws_account
+              run: |
+                echo "account_id=$(aws sts get-caller-identity --query Account --output text)" >> "$GITHUB_OUTPUT"
+                echo "AWS account ID: $(aws sts get-caller-identity --query Account --output text)"
+
+            - name: Terraform Init
+              working-directory: ${{ inputs.terraform_path }}
+              run: |
+                terraform init -input=false \
+                    -backend-config="bucket=terraform-state-741448939728" \
+                    -backend-config="key=${{ steps.aws_account.outputs.account_id }}/${{ inputs.aws_region }}/terraform.tfstate" \
+                    -backend-config="region=${{ inputs.aws_region }}" \
+                    -backend-config="dynamodb_table=terraform-locks" \
+                    -backend-config="encrypt=true"
+
+            - name: Terraform Validate
+              working-directory: ${{ inputs.terraform_path }}
+              run: terraform validate
+
+            - name: Terraform Plan
+              if: ${{ inputs.tf_action == 'plan' || inputs.tf_action == 'apply' || inputs.tf_action == 'destroy' }}
+              working-directory: ${{ inputs.terraform_path }}
+              run: |
+                terraform plan -input=false \
+                    -var="aws_region=${{ inputs.aws_region }}" \
+                    -var="environment=${{ inputs.environment }}" \
+                    -var="lambda_name=${{ inputs.lambda_name }}"
+
+            - name: Terraform Apply
+              if: ${{ inputs.tf_action == 'apply' }}
+              working-directory: ${{ inputs.terraform_path }}
+              run: |
+                terraform apply -auto-approve -input=false \
+                    -var="aws_region=${{ inputs.aws_region }}" \
+                    -var="environment=${{ inputs.environment }}" \
+                    -var="lambda_name=${{ inputs.lambda_name }}"
+
+            - name: Terraform Destroy
+              if: ${{ inputs.tf_action == 'destroy' }}
+              working-directory: ${{ inputs.terraform_path }}
+              run: |
+                terraform destroy -auto-approve -input=false \
+                    -var="aws_region=${{ inputs.aws_region }}" \
+                    -var="environment=${{ inputs.environment }}" \
+                    -var="lambda_name=${{ inputs.lambda_name }}"

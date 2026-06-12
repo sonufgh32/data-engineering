@@ -7,7 +7,13 @@ derby.log
 scripts/data-alloy/*
 terraform/.terraform/*
 terraform/.terraform.*
-docker-compose-upgrade.yml
+**/.terraform/
+**/.terraform/**
+terraform/**/*.tfstate
+terraform/**/*.tfstate.backup
+terraform/**/*.tfvars
+terraform/**/*.tfvars.json
+Docker-compose-upgrade.yml
 scripts/node_exporter-*
 scripts/*.tar.gz*
 kafka/*.ipynb_checkpoints/*
@@ -20,3 +26,4 @@ scripts/kafka/.ipynb_checkpoints/*
 scripts/kafka/__pycache__/*
 .pytest_cache/*
 scripts/.Trash-0/*
+*.terraform/*
