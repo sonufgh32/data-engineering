@@ -51,8 +51,8 @@ permissions:
     id-token: write
 
 jobs:
-    deploy:
-        name: Deploy Terraform
+    terraform-plan:
+        name: Terraform Plan
         runs-on: ubuntu-latest
 
         defaults:
@@ -75,20 +75,25 @@ jobs:
                 aws-region: ${{ inputs.aws_region }}
                 role-session-name: github-actions-terraform-deploy
 
-            - name: Get AWS account ID from OIDC session
+            - name: Get AWS account details from OIDC session
               id: aws_account
               run: |
-                echo "account_id=$(aws sts get-caller-identity --query Account --output text)" >> "$GITHUB_OUTPUT"
-                echo "AWS account ID: $(aws sts get-caller-identity --query Account --output text)"
+                ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+                ACCOUNT_ALIAS=$(aws iam list-account-aliases --query 'AccountAliases[0]' --output text 2>/dev/null || true)
+
+                echo "account_id=$ACCOUNT_ID" >> "$GITHUB_OUTPUT"
+                echo "account_alias=${ACCOUNT_ALIAS:-$ACCOUNT_ID}" >> "$GITHUB_OUTPUT"
+                echo "AWS account ID: $ACCOUNT_ID"
+                echo "AWS account alias: ${ACCOUNT_ALIAS:-$ACCOUNT_ID}"
 
             - name: Terraform Init
               working-directory: ${{ inputs.terraform_path }}
               run: |
                 terraform init -input=false \
                     -backend-config="bucket=terraform-state-741448939728" \
-                    -backend-config="key=${{ steps.aws_account.outputs.account_id }}/${{ inputs.aws_region }}/terraform.tfstate" \
+                    -backend-config="key=${{ steps.aws_account.outputs.account_alias }}/${{ inputs.aws_region }}/terraform.tfstate" \
                     -backend-config="region=${{ inputs.aws_region }}" \
-                    -backend-config="dynamodb_table=terraform-locks" \
+                    -backend-config="use_lockfile=true" \
                     -backend-config="encrypt=true"
 
             - name: Terraform Validate
@@ -96,7 +101,6 @@ jobs:
               run: terraform validate
 
             - name: Terraform Plan
-              if: ${{ inputs.tf_action == 'plan' || inputs.tf_action == 'apply' || inputs.tf_action == 'destroy' }}
               working-directory: ${{ inputs.terraform_path }}
               run: |
                 terraform plan -input=false \
@@ -104,8 +108,56 @@ jobs:
                     -var="environment=${{ inputs.environment }}" \
                     -var="lambda_name=${{ inputs.lambda_name }}"
 
+            - name: Write GitHub Summary
+              if: always()
+              run: |
+                {
+                  echo '## Terraform Plan Summary'
+                  echo ''
+                  echo "- Action selected: ${{ inputs.tf_action }}"
+                  echo "- Terraform path: ${{ inputs.terraform_path }}"
+                  echo "- AWS region: ${{ inputs.aws_region }}"
+                  echo "- Environment: ${{ inputs.environment }}"
+                  echo "- Lambda resource prefix: ${{ inputs.lambda_name }}"
+                } >> "$GITHUB_STEP_SUMMARY"
+
+    terraform-apply:
+        name: Terraform Apply
+        needs: terraform-plan
+        if: ${{ inputs.tf_action == 'apply' }}
+        runs-on: ubuntu-latest
+
+        defaults:
+            run:
+                shell: bash
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                terraform_version: latest
+
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v1.7.0
+              with:
+                role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+                aws-region: ${{ inputs.aws_region }}
+                role-session-name: github-actions-terraform-deploy
+
+            - name: Terraform Init
+              working-directory: ${{ inputs.terraform_path }}
+              run: |
+                terraform init -input=false \
+                    -backend-config="bucket=terraform-state-741448939728" \
+                    -backend-config="key=${{ inputs.aws_region }}/terraform.tfstate" \
+                    -backend-config="region=${{ inputs.aws_region }}" \
+                    -backend-config="use_lockfile=true" \
+                    -backend-config="encrypt=true"
+
             - name: Terraform Apply
-              if: ${{ inputs.tf_action == 'apply' }}
               working-directory: ${{ inputs.terraform_path }}
               run: |
                 terraform apply -auto-approve -input=false \
@@ -113,11 +165,68 @@ jobs:
                     -var="environment=${{ inputs.environment }}" \
                     -var="lambda_name=${{ inputs.lambda_name }}"
 
+            - name: Write GitHub Summary
+              if: always()
+              run: |
+                {
+                  echo '## Terraform Apply Summary'
+                  echo ''
+                  echo "- Applied from: ${{ inputs.terraform_path }}"
+                  echo "- Region: ${{ inputs.aws_region }}"
+                  echo "- Environment: ${{ inputs.environment }}"
+                } >> "$GITHUB_STEP_SUMMARY"
+
+    terraform-destroy:
+        name: Terraform Destroy
+        needs: terraform-plan
+        if: ${{ inputs.tf_action == 'destroy' }}
+        runs-on: ubuntu-latest
+
+        defaults:
+            run:
+                shell: bash
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                terraform_version: latest
+
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v1.7.0
+              with:
+                role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+                aws-region: ${{ inputs.aws_region }}
+                role-session-name: github-actions-terraform-deploy
+
+            - name: Terraform Init
+              working-directory: ${{ inputs.terraform_path }}
+              run: |
+                terraform init -input=false \
+                    -backend-config="bucket=terraform-state-741448939728" \
+                    -backend-config="key=${{ inputs.aws_region }}/terraform.tfstate" \
+                    -backend-config="region=${{ inputs.aws_region }}" \
+                    -backend-config="use_lockfile=true" \
+                    -backend-config="encrypt=true"
+
             - name: Terraform Destroy
-              if: ${{ inputs.tf_action == 'destroy' }}
               working-directory: ${{ inputs.terraform_path }}
               run: |
                 terraform destroy -auto-approve -input=false \
                     -var="aws_region=${{ inputs.aws_region }}" \
                     -var="environment=${{ inputs.environment }}" \
                     -var="lambda_name=${{ inputs.lambda_name }}"
+
+            - name: Write GitHub Summary
+              if: always()
+              run: |
+                {
+                  echo '## Terraform Destroy Summary'
+                  echo ''
+                  echo "- Destroyed from: ${{ inputs.terraform_path }}"
+                  echo "- Region: ${{ inputs.aws_region }}"
+                  echo "- Environment: ${{ inputs.environment }}"
+                } >> "$GITHUB_STEP_SUMMARY"
