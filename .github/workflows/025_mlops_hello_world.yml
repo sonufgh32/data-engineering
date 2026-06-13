@@ -8,6 +8,7 @@ on:
             - '**'
         paths:
             - 'mlops/hello-world/**'
+            - '.github/workflows/025_mlops_hello_world.yml'
 
 defaults:
     run:
