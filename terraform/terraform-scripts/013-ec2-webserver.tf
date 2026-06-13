@@ -126,38 +126,6 @@ resource "aws_instance" "webserver" {
   instance_type          = "t3.micro"
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
-  key_name               = "ClusterVPCKeyPair"
-
-  # Example provisioners (use only when needed)
-  provisioner "local-exec" {
-    command    = "echo 'Provisioning EC2 instance ${self.id}' >> provisioner.log"
-    when       = create
-    on_failure = continue
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "echo 'Hello from remote-exec provisioner' > /tmp/provisioner-demo.txt",
-      "sudo dnf install -y curl",
-      "echo 'Provisioner completed successfully'"
-    ]
-
-    when       = create
-    on_failure = fail
-
-    connection {
-      type        = "ssh"
-      user        = "ec2-user"
-      private_key = file("C:/Users/sonuf/Downloads/Private_Keys/ClusterVPCKeyPair.pem")
-      host        = self.public_ip
-    }
-  }
-
-  provisioner "local-exec" {
-    command    = "echo 'Destroying EC2 instance ${self.id}' >> destroy.log"
-    when       = destroy
-    on_failure = continue
-  }
 
   user_data = <<-EOF
               #!/bin/bash
@@ -184,13 +152,6 @@ resource "aws_instance" "webserver" {
     Name = "terraform-webserver"
   }
 }
-
-# Useful Terraform commands
-# terraform fmt
-# terraform validate
-# terraform plan
-# terraform apply
-# terraform destroy
 
 # Outputs
 output "instance_id" {
