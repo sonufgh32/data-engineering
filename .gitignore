@@ -16,6 +16,10 @@ terraform/**/*.tfvars.json
 Docker-compose-upgrade.yml
 scripts/node_exporter-*
 scripts/*.tar.gz*
+
+# Ignore the nested MLOps data_version_control project from the parent repo.
+mlops/data_version_control/
+
 kafka/*.ipynb_checkpoints/*
 kafka/__pycache__/*
 kakfa/tests/__pycache__/*
