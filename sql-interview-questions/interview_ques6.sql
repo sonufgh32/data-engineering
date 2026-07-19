@@ -1,3 +1,64 @@
+-- CREATE TABLE EMPLOYEE (
+--     EMPID     NUMBER,
+--     ENAME     VARCHAR2(50) NOT NULL,
+--     DEPTNO    NUMBER(2),
+--     SALARY    NUMBER(10,2),
+--     JOB       VARCHAR2(30)
+-- );
+
+-- INSERT ALL
+-- INTO EMPLOYEE VALUES (103, 'Charlie', 30, 40000, 'CLERK')
+-- INTO EMPLOYEE VALUES (109, 'Ian', 30, 61000, 'ANALYST')
+-- INTO EMPLOYEE VALUES (106, 'Frank', 30, 46000, 'CLERK')
+-- INTO EMPLOYEE VALUES (106, 'Frank', 30, 46000, 'CLERK')
+-- INTO EMPLOYEE VALUES (106, 'Frank', 30, 46000, 'CLERK')
+-- INTO EMPLOYEE VALUES (102, 'Bob', 20, 62000, 'ANALYST')
+-- INTO EMPLOYEE VALUES (108, 'Helen', 20, 56000, 'SALESMAN')
+-- INTO EMPLOYEE VALUES (105, 'Eve', 10, 52000, 'SALESMAN')
+-- INTO EMPLOYEE VALUES (101, 'Alice', 10, 85000, 'MANAGER')
+-- INTO EMPLOYEE VALUES (107, 'Grace', 10, 73000, 'MANAGER')
+-- INTO EMPLOYEE VALUES (110, 'Jane', 30, 80000, 'MANAGER')
+-- INTO EMPLOYEE VALUES (110, 'Jane', 30, 80000, 'MANAGER')
+-- INTO EMPLOYEE VALUES (110, 'Jane', 30, 80000, 'MANAGER')
+-- INTO EMPLOYEE VALUES (104, 'David', 10, 95000, 'PRESIDENT')
+-- SELECT * FROM DUAL;
+
+-- CREATE TABLE LOCATIONS (
+--     LOCATION_ID      NUMBER(4) PRIMARY KEY,
+--     STREET_ADDRESS   VARCHAR2(100),
+--     POSTAL_CODE      VARCHAR2(20),
+--     CITY             VARCHAR2(50) NOT NULL,
+--     STATE_PROVINCE   VARCHAR2(50),
+--     COUNTRY_ID       CHAR(2) NOT NULL
+-- );
+
+-- INSERT ALL
+-- INTO LOCATIONS VALUES (1000, '1297 Via Cola di Rie', '989', 'Roma', NULL, 'IT')
+-- INTO LOCATIONS VALUES (1100, '93091 Calle della Testa', '10934', 'Venice', NULL, 'IT')
+-- INTO LOCATIONS VALUES (1200, '2017 Shinjuku-ku', '1689', 'Tokyo', 'Tokyo Prefecture', 'JP')
+-- INTO LOCATIONS VALUES (1300, '9450 Kamiya-cho', '6823', 'Hiroshima', NULL, 'JP')
+-- INTO LOCATIONS VALUES (1400, '2014 Jabberwocky Rd', '26192', 'Southlake', 'Texas', 'US')
+-- INTO LOCATIONS VALUES (1500, '2011 Interiors Blvd', '99236', 'South San Francisco', 'California', 'US')
+-- INTO LOCATIONS VALUES (1600, '2007 Zagora St', '50090', 'South Brunswick', 'New Jersey', 'US')
+-- INTO LOCATIONS VALUES (1700, '2004 Charade Rd', '98199', 'Seattle', 'Washington', 'US')
+-- INTO LOCATIONS VALUES (1800, '147 Spadina Ave', 'M5V 2L7', 'Toronto', 'Ontario', 'CA')
+-- INTO LOCATIONS VALUES (1900, '6092 Boxwood St', 'YSW 9T2', 'Whitehorse', 'Yukon', 'CA')
+-- INTO LOCATIONS VALUES (2000, '40-5-12 Laogianggen', '190518', 'Beijing', NULL, 'CN')
+-- INTO LOCATIONS VALUES (2100, '1298 Vileparle (E)', '490231', 'Bombay', 'Maharashtra', 'IN')
+-- INTO LOCATIONS VALUES (2200, '12-98 Victoria Street', '2901', 'Sydney', 'New South Wales', 'AU')
+-- INTO LOCATIONS VALUES (2300, '198 Clementi North', '540198', 'Singapore', NULL, 'SG')
+-- INTO LOCATIONS VALUES (2400, '8204 Arthur St', NULL, 'London', NULL, 'UK')
+-- INTO LOCATIONS VALUES (2500, 'Magdalen Centre, The Oxford Science Park', 'OX9 9ZB', 'Oxford', 'Oxford', 'UK')
+-- INTO LOCATIONS VALUES (2600, '9702 Chester Road', '9629850293', 'Stretford', 'Manchester', 'UK')
+-- INTO LOCATIONS VALUES (2700, 'Schwanthalerstr. 7031', '80925', 'Munich', 'Bavaria', 'DE')
+-- INTO LOCATIONS VALUES (2800, 'Rua Frei Caneca 1360', '01307-002', 'Sao Paulo', 'Sao Paulo', 'BR')
+-- INTO LOCATIONS VALUES (2900, '20 Rue des Corps-Saints', '1730', 'Geneva', 'Geneve', 'CH')
+-- INTO LOCATIONS VALUES (3000, 'Murtenstrasse 921', '3095', 'Bern', 'BE', 'CH')
+-- INTO LOCATIONS VALUES (3100, 'Pieter Breughelstraat 837', '3029SK', 'Utrecht', 'Utrecht', 'NL')
+-- INTO LOCATIONS VALUES (3200, 'Mariano Escobedo 9991', '11932', 'Mexico City', 'Distrito Federal', 'MX')
+-- SELECT * FROM DUAL;
+
+-- COMMIT;
 
 SELECT * FROM EMPLOYEE;
 SELECT * FROM LOCATIONS;
@@ -214,6 +275,25 @@ SELECT
 FROM DUAL;
 
 --
+-- CREATE TABLE CHOCOLATE (
+--     CHOCOLATE_NAME   VARCHAR2(50),
+--     MANUFACTURER     VARCHAR2(50)
+-- );
+
+-- INSERT ALL
+-- INTO CHOCOLATE VALUES ('Dairy Milk', 'Cadbury')
+-- INTO CHOCOLATE VALUES ('Kit Kat', 'Nestle')
+-- INTO CHOCOLATE VALUES ('Perk', NULL)
+-- INTO CHOCOLATE VALUES ('Munch', 'Nestle')
+-- INTO CHOCOLATE VALUES ('5 Star', NULL)
+-- INTO CHOCOLATE VALUES ('Snickers', 'Mars')
+-- INTO CHOCOLATE VALUES ('Milky Way', NULL)
+-- INTO CHOCOLATE VALUES ('Toblerone', 'MondelÄ“z')
+-- INTO CHOCOLATE VALUES ('Bounty', NULL)
+-- INTO CHOCOLATE VALUES ('Twix', 'Mars')
+-- SELECT * FROM DUAL;
+
+-- COMMIT;
 
 SELECT * FROM chocolate;
 
