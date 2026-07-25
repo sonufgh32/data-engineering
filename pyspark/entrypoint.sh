@@ -2,6 +2,14 @@
 
 set -e
 
+# ============================================================
+# Suppress warnings and logs globally for all PySpark scripts
+# ============================================================
+export PYTHONWARNINGS=ignore
+export LOG4J_CONF_DIR=${SPARK_HOME}/conf
+export SPARK_LOCAL_IP=127.0.0.1
+export SPARK_SUBMIT_OPTS="-Dlog4j.configuration=file://${SPARK_HOME}/conf/log4j.properties"
+
 # Start Node Exporter
 echo "Starting Node Exporter..."
 wget -q https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz && \

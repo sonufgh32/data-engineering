@@ -29,8 +29,8 @@ RUN apt-get update && apt-get install -y \
 # ------------------------------------------------------------
 # 2. Install AWS CLI
 # ------------------------------------------------------------
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-    unzip awscliv2.zip && \
+COPY packages/awscli-exe-linux-x86_64.zip awscliv2.zip
+RUN unzip awscliv2.zip && \
     ./aws/install && \
     rm -rf aws awscliv2.zip
 
@@ -40,16 +40,19 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ENV SPARK_HOME=/opt/spark
 ENV PATH=$PATH:$JAVA_HOME/bin:$SPARK_HOME/bin:$SPARK_HOME/sbin
+ENV PYTHONWARNINGS=ignore
+ENV PYSPARK_DRIVER_PYTHON=python3
+ENV PYSPARK_PYTHON=python3
 
 # ------------------------------------------------------------
 # 4. Install Spark 3.5.1 & Alloy
 # ------------------------------------------------------------
-RUN wget https://archive.apache.org/dist/spark/spark-3.5.1/spark-3.5.1-bin-hadoop3.tgz && \
-    tar -xzf spark-3.5.1-bin-hadoop3.tgz && \
+COPY packages/spark-3.5.1-bin-hadoop3.tgz .
+COPY packages/alloy-linux-amd64.zip /usr/local/bin/alloy-linux-amd64.zip
+RUN tar -xzf spark-3.5.1-bin-hadoop3.tgz && \
     mv spark-3.5.1-bin-hadoop3 /opt/spark && \
     rm spark-3.5.1-bin-hadoop3.tgz && \
     cd /usr/local/bin && \
-    curl -O -L "https://github.com/grafana/alloy/releases/download/v1.11.3/alloy-linux-amd64.zip" && \
     unzip "alloy-linux-amd64.zip" && \
     rm alloy-linux-amd64.zip && \
     chmod +x alloy-linux-amd64
@@ -61,7 +64,10 @@ RUN addgroup --system alloy && adduser --system --ingroup alloy alloy
 COPY config.alloy /etc/alloy/config.alloy
 COPY entrypoint.sh /entrypoint.sh
 COPY log4j.properties /opt/spark/conf/log4j.properties
+COPY spark-defaults.conf /opt/spark/conf/spark-defaults.conf
 RUN chmod +x /entrypoint.sh
+
+COPY spark-jars/*.jar /opt/spark/jars/
 
 RUN mkdir -p /etc/alloy
 

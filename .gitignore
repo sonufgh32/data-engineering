@@ -31,3 +31,7 @@ scripts/kafka/__pycache__/*
 .pytest_cache/*
 scripts/.Trash-0/*
 *.terraform/*
+*mlrun/*
+*.venv/*
+*mlartifacts/*
+*venv/*
