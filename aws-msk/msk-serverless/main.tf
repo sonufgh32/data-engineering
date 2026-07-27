@@ -520,3 +520,149 @@ resource "aws_instance" "consumer" {
     Name = "consumer"
   }
 }
+
+resource "aws_iam_role" "firehose" {
+  name = "${var.project_name}-firehose-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [{
+      Effect = "Allow"
+
+      Principal = {
+        Service = "firehose.amazonaws.com"
+      }
+
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_policy" "firehose" {
+
+  name = "${var.project_name}-firehose-policy"
+
+  policy = jsonencode({
+
+    Version = "2012-10-17"
+
+    Statement = [
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "s3:AbortMultipartUpload",
+          "s3:GetBucketLocation",
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:ListBucketMultipartUploads",
+          "s3:PutObject"
+        ]
+
+        Resource = [
+          "arn:aws:s3:::shivchoudhury-datasets",
+          "arn:aws:s3:::shivchoudhury-datasets/msk/*"
+        ]
+      },
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "logs:PutLogEvents"
+        ]
+
+        Resource = "*"
+      },
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "kafka:GetBootstrapBrokers",
+          "kafka:DescribeCluster",
+          "kafka:DescribeClusterV2",
+          "kafka-cluster:Connect"
+        ]
+
+        Resource = aws_msk_serverless_cluster.cluster.arn
+      },
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "kafka-cluster:ReadData",
+          "kafka-cluster:DescribeTopic",
+          "kafka-cluster:DescribeGroup"
+        ]
+
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "firehose" {
+
+  role       = aws_iam_role.firehose.name
+  policy_arn = aws_iam_policy.firehose.arn
+}
+
+resource "aws_cloudwatch_log_group" "firehose" {
+
+  name              = "/aws/kinesisfirehose/msk"
+  retention_in_days = 7
+}
+
+resource "aws_cloudwatch_log_stream" "firehose" {
+
+  name           = "delivery"
+  log_group_name = aws_cloudwatch_log_group.firehose.name
+}
+
+resource "aws_kinesis_firehose_delivery_stream" "msk" {
+
+  name        = var.firehose_name
+  destination = "extended_s3"
+
+  msk_source_configuration {
+
+    msk_cluster_arn = aws_msk_serverless_cluster.cluster.arn
+
+    topic_name = var.kafka_topic
+
+    authentication_configuration {
+
+      connectivity = "PRIVATE"
+
+      role_arn = aws_iam_role.firehose.arn
+    }
+  }
+
+  extended_s3_configuration {
+
+    role_arn = aws_iam_role.firehose.arn
+
+    bucket_arn = "arn:aws:s3:::shivchoudhury-datasets"
+
+    prefix = "msk/"
+
+    buffering_interval = 60
+
+    buffering_size = 64
+
+    compression_format = "GZIP"
+
+    cloudwatch_logging_options {
+
+      enabled = true
+
+      log_group_name = aws_cloudwatch_log_group.firehose.name
+
+      log_stream_name = aws_cloudwatch_log_stream.firehose.name
+    }
+  }
+}

@@ -6,6 +6,18 @@ variable "project_name" {
   default = "msk-serverless-demo"
 }
 
+variable "firehose_name" {
+  default = "msk-to-s3-firehose"
+}
+
+variable "kafka_topic" {
+  default = "Testing"
+}
+
+variable "bucket_name" {
+  default = "shivchoudhury-datasets"
+}
+
 variable "environment" {
   default = "dev"
 }
