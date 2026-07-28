@@ -1,0 +1,69 @@
+#!/bin/bash
+set -euo pipefail
+
+exec > >(tee /var/log/user-data.log | logger -t user-data -s 2>/dev/console) 2>&1
+
+echo "Starting producer host bootstrap"
+
+if command -v dnf >/dev/null 2>&1; then
+  dnf install -y python3 python3-pip git
+elif command -v yum >/dev/null 2>&1; then
+  yum install -y python3 python3-pip git
+fi
+
+mkdir -p /opt/msk-producer
+cd /opt/msk-producer
+
+cat > requirements.txt <<'EOF_REQUIREMENTS'
+${requirements_txt}
+EOF_REQUIREMENTS
+
+cat > config.py <<'EOF_CONFIG'
+${config_py}
+EOF_CONFIG
+
+cat > kafka_utils.py <<'EOF_KAFKA_UTILS'
+${kafka_utils_py}
+EOF_KAFKA_UTILS
+
+cat > create_topic.py <<'EOF_CREATE_TOPIC'
+${create_topic_py}
+EOF_CREATE_TOPIC
+
+cat > producer.py <<'EOF_PRODUCER'
+${producer_py}
+EOF_PRODUCER
+
+cat > run_on_ec2.sh <<'EOF_RUN_SCRIPT'
+${run_on_ec2_sh}
+EOF_RUN_SCRIPT
+
+cat > README.md <<'EOF_README'
+${producer_readme_md}
+EOF_README
+
+chmod +x run_on_ec2.sh
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+cat > /etc/profile.d/msk_producer_env.sh <<EOF_ENV
+export AWS_REGION="${aws_region}"
+export BOOTSTRAP_SERVERS="${bootstrap_servers}"
+export TOPIC="${topic_name}"
+export INTERVAL="5"
+EOF_ENV
+
+cat > /usr/local/bin/msk-producer-run <<'EOF_RUNNER'
+#!/bin/bash
+set -euo pipefail
+source /etc/profile.d/msk_producer_env.sh
+cd /opt/msk-producer
+source .venv/bin/activate
+python producer.py run --topic "$${TOPIC}" --interval "$${INTERVAL}" --bootstrap "$${BOOTSTRAP_SERVERS}"
+EOF_RUNNER
+chmod +x /usr/local/bin/msk-producer-run
+
+echo "Bootstrap complete. Use 'msk-producer-run' to start producer."
