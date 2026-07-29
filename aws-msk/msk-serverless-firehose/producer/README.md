@@ -29,13 +29,13 @@ cd /opt/msk-producer
 
 | File | Purpose | Run directly? |
 | --- | --- | --- |
-| `config.py` | Default Region, topic, endpoint, partition, replication, and interval values. | No; imported by the CLI scripts. |
+| `config.py` | Region, topic, endpoint, partition, replication, and interval defaults. Environment values override its defaults. | No; imported by the CLI scripts. |
 | `kafka_utils.py` | IAM token provider and reusable topic/producer operations. | No; imported by the CLI scripts. |
 | `create_topic.py` | Creates, lists, or deletes MSK topics. | Yes. |
 | `producer.py` | Sends generated sensor JSON records. | Yes. |
 | `run_on_ec2.sh` | Installs dependencies in `.venv` and starts the producer. | Yes. |
 
-CLI values take precedence over the defaults in `config.py`. The current Python configuration does not read environment variables directly, so pass endpoint, topic, and interval through the command-line options shown below.
+CLI values take precedence over the defaults in `config.py`. On the Terraform-created producer, source `/etc/profile.d/msk_producer_env.sh` to use the current cluster endpoint, topic, Region, and interval automatically.
 
 ## `create_topic.py`
 
@@ -123,7 +123,7 @@ Firehose buffers records for up to the configured `buffer_interval` (60 seconds 
 aws s3 ls "s3://$(terraform output -raw bucket_name)/" --recursive
 ```
 
-Successful objects are GZIP files organized as `year=YYYY/month=MM/day=DD/`. To investigate missing deliveries, inspect the Firehose log group and stream created by Terraform:
+Successful objects are uncompressed CSV files organized as `year=YYYY/month=MM/day=DD/`. To investigate missing deliveries, inspect the Firehose log group and stream created by Terraform:
 
 ```bash
 aws logs tail "/aws/kinesisfirehose/msk-firehose-demo-dev" --follow --region ap-south-1

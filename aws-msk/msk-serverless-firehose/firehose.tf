@@ -23,7 +23,7 @@ resource "aws_cloudwatch_log_stream" "firehose" {
 ############################################
 
 resource "aws_kinesis_firehose_delivery_stream" "msk" {
-  # Consume records from MSK and deliver compressed objects to S3.
+  # Consume records from MSK, transform JSON to CSV, and deliver to S3.
   name = "${local.common_name}-firehose"
 
   destination = "extended_s3"
@@ -53,7 +53,7 @@ resource "aws_kinesis_firehose_delivery_stream" "msk" {
   # S3 Destination
   ##########################################
 
-  # Buffer records before writing GZIP files to date-partitioned S3 prefixes.
+  # Transform records before writing uncompressed CSV files to S3.
   extended_s3_configuration {
 
     role_arn = aws_iam_role.firehose.arn
@@ -64,11 +64,32 @@ resource "aws_kinesis_firehose_delivery_stream" "msk" {
 
     buffering_interval = var.buffer_interval
 
-    compression_format = "GZIP"
+    compression_format = "UNCOMPRESSED"
+
+    file_extension = ".csv"
 
     prefix = "year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
 
     error_output_prefix = "errors/"
+
+    processing_configuration {
+
+      enabled = true
+
+      processors {
+
+        type = "Lambda"
+
+        parameters {
+
+          parameter_name  = "LambdaArn"
+          parameter_value = aws_lambda_function.firehose_csv_transformer.arn
+
+        }
+
+      }
+
+    }
 
     cloudwatch_logging_options {
 

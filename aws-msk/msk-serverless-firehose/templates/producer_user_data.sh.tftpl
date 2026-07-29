@@ -18,6 +18,17 @@ cd /opt/msk-producer
 aws s3 cp "s3://${producer_source_bucket}/${producer_source_prefix}/${producer_file}" "${producer_file}"
 %{ endfor ~}
 
+cat > config.py <<EOF_CONFIG
+import os
+
+AWS_REGION = os.getenv("AWS_REGION", "${aws_region}")
+TOPIC = os.getenv("TOPIC", "${topic_name}")
+BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS", "${bootstrap_servers}")
+DEFAULT_NUM_PARTITIONS = 1
+DEFAULT_REPLICATION_FACTOR = 3
+INTERVAL = int(os.getenv("INTERVAL", "5"))
+EOF_CONFIG
+
 chmod +x run_on_ec2.sh
 
 python3 -m venv .venv

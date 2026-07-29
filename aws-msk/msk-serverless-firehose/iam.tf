@@ -91,6 +91,18 @@ data "aws_iam_policy_document" "firehose" {
   }
 
   statement {
+
+    sid = "InvokeCsvTransformer"
+
+    effect = "Allow"
+
+    actions = ["lambda:InvokeFunction"]
+
+    resources = [aws_lambda_function.firehose_csv_transformer.arn]
+
+  }
+
+  statement {
     sid = "MSK"
 
     effect = "Allow"

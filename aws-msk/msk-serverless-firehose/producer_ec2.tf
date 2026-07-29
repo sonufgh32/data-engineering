@@ -134,13 +134,12 @@ resource "aws_iam_role" "producer" {
 
 locals {
   producer_source_files = {
-    "requirements.txt"  = "${path.module}/producer/requirements.txt"
-    "config.py"         = "${path.module}/producer/config.py"
-    "kafka_utils.py"    = "${path.module}/producer/kafka_utils.py"
-    "create_topic.py"   = "${path.module}/producer/create_topic.py"
-    "producer.py"       = "${path.module}/producer/producer.py"
-    "run_on_ec2.sh"     = "${path.module}/producer/run_on_ec2.sh"
-    "README.md"         = "${path.module}/producer/README.md"
+    "requirements.txt" = "${path.module}/producer/requirements.txt"
+    "kafka_utils.py"   = "${path.module}/producer/kafka_utils.py"
+    "create_topic.py"  = "${path.module}/producer/create_topic.py"
+    "producer.py"      = "${path.module}/producer/producer.py"
+    "run_on_ec2.sh"    = "${path.module}/producer/run_on_ec2.sh"
+    "README.md"        = "${path.module}/producer/README.md"
   }
 
   producer_source_prefix = "bootstrap/producer"
