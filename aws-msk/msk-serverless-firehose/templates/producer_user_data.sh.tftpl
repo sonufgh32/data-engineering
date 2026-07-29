@@ -14,33 +14,9 @@ fi
 mkdir -p /opt/msk-producer
 cd /opt/msk-producer
 
-cat > requirements.txt <<'EOF_REQUIREMENTS'
-${requirements_txt}
-EOF_REQUIREMENTS
-
-cat > config.py <<'EOF_CONFIG'
-${config_py}
-EOF_CONFIG
-
-cat > kafka_utils.py <<'EOF_KAFKA_UTILS'
-${kafka_utils_py}
-EOF_KAFKA_UTILS
-
-cat > create_topic.py <<'EOF_CREATE_TOPIC'
-${create_topic_py}
-EOF_CREATE_TOPIC
-
-cat > producer.py <<'EOF_PRODUCER'
-${producer_py}
-EOF_PRODUCER
-
-cat > run_on_ec2.sh <<'EOF_RUN_SCRIPT'
-${run_on_ec2_sh}
-EOF_RUN_SCRIPT
-
-cat > README.md <<'EOF_README'
-${producer_readme_md}
-EOF_README
+%{ for producer_file in producer_files ~}
+aws s3 cp "s3://${producer_source_bucket}/${producer_source_prefix}/${producer_file}" "${producer_file}"
+%{ endfor ~}
 
 chmod +x run_on_ec2.sh
 

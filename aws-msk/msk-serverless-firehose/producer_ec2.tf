@@ -132,6 +132,30 @@ resource "aws_iam_role" "producer" {
   assume_role_policy = data.aws_iam_policy_document.producer_assume.json
 }
 
+locals {
+  producer_source_files = {
+    "requirements.txt"  = "${path.module}/producer/requirements.txt"
+    "config.py"         = "${path.module}/producer/config.py"
+    "kafka_utils.py"    = "${path.module}/producer/kafka_utils.py"
+    "create_topic.py"   = "${path.module}/producer/create_topic.py"
+    "producer.py"       = "${path.module}/producer/producer.py"
+    "run_on_ec2.sh"     = "${path.module}/producer/run_on_ec2.sh"
+    "README.md"         = "${path.module}/producer/README.md"
+  }
+
+  producer_source_prefix = "bootstrap/producer"
+}
+
+resource "aws_s3_object" "producer_source" {
+  # Keep the bootstrap small by downloading the producer source during launch.
+  for_each = local.producer_source_files
+
+  bucket = aws_s3_bucket.firehose.id
+  key    = "${local.producer_source_prefix}/${each.key}"
+  source = each.value
+  etag   = filemd5(each.value)
+}
+
 data "aws_iam_policy_document" "producer_msk" {
   # The producer can manage topics and produce or read records across this cluster.
   statement {
@@ -169,6 +193,17 @@ data "aws_iam_policy_document" "producer_msk" {
       aws_msk_serverless_cluster.this.arn,
       "${replace(aws_msk_serverless_cluster.this.arn, ":cluster/", ":topic/")}/*",
       "${replace(aws_msk_serverless_cluster.this.arn, ":cluster/", ":group/")}/*"
+    ]
+  }
+
+  statement {
+    sid    = "ProducerSourceDownload"
+    effect = "Allow"
+
+    actions = ["s3:GetObject"]
+
+    resources = [
+      "${aws_s3_bucket.firehose.arn}/${local.producer_source_prefix}/*"
     ]
   }
 }
@@ -212,25 +247,22 @@ resource "aws_instance" "producer" {
   key_name                    = var.producer_key_name != "" ? var.producer_key_name : null
 
   user_data_replace_on_change = true
-  # Embed the current local producer files in user data, avoiding a separate artifact store.
+  # Download producer source staged in the private deployment bucket.
   user_data = templatefile("${path.module}/templates/producer_user_data.sh.tftpl", {
-    aws_region         = var.aws_region
-    bootstrap_servers  = aws_msk_serverless_cluster.this.bootstrap_brokers_sasl_iam
-    topic_name         = var.topic_name
-    requirements_txt   = file("${path.module}/producer/requirements.txt")
-    config_py          = file("${path.module}/producer/config.py")
-    kafka_utils_py     = file("${path.module}/producer/kafka_utils.py")
-    create_topic_py    = file("${path.module}/producer/create_topic.py")
-    producer_py        = file("${path.module}/producer/producer.py")
-    run_on_ec2_sh      = file("${path.module}/producer/run_on_ec2.sh")
-    producer_readme_md = file("${path.module}/producer/README.md")
+    aws_region             = var.aws_region
+    bootstrap_servers      = aws_msk_serverless_cluster.this.bootstrap_brokers_sasl_iam
+    topic_name             = var.topic_name
+    producer_source_bucket = aws_s3_bucket.firehose.bucket
+    producer_source_prefix = local.producer_source_prefix
+    producer_files         = keys(local.producer_source_files)
   })
 
   # Start only after MSK and the instance's MSK/SSM permissions are available.
   depends_on = [
     aws_msk_serverless_cluster.this,
     aws_iam_role_policy_attachment.producer_msk,
-    aws_iam_role_policy_attachment.producer_ssm
+    aws_iam_role_policy_attachment.producer_ssm,
+    aws_s3_object.producer_source
   ]
 
   tags = {

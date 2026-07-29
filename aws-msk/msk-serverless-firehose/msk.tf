@@ -54,8 +54,8 @@ resource "aws_msk_serverless_cluster" "this" {
 # MSK Cluster Policy
 ##################################################
 resource "aws_msk_cluster_policy" "firehose" {
-  # Resource-based access lets Firehose create its VPC connection and consume
-  # only the configured source topic with its delivery role.
+  # MSK Serverless cluster policies authorize Firehose's VPC connection only.
+  # Topic consumption is authorized by the Firehose role's identity policy.
   cluster_arn = aws_msk_serverless_cluster.this.arn
 
   policy = jsonencode({
@@ -76,51 +76,6 @@ resource "aws_msk_cluster_policy" "firehose" {
         ]
 
         Resource = aws_msk_serverless_cluster.this.arn
-      },
-      {
-        Sid    = "AllowFirehoseRoleToConsumeTopic"
-        Effect = "Allow"
-
-        Principal = {
-          AWS = aws_iam_role.firehose.arn
-        }
-
-        Action = [
-          "kafka-cluster:Connect",
-          "kafka-cluster:DescribeCluster"
-        ]
-
-        Resource = aws_msk_serverless_cluster.this.arn
-      },
-      {
-        Sid    = "AllowFirehoseRoleToReadTopic"
-        Effect = "Allow"
-
-        Principal = {
-          AWS = aws_iam_role.firehose.arn
-        }
-
-        Action = [
-          "kafka-cluster:DescribeTopic",
-          "kafka-cluster:ReadData"
-        ]
-
-        Resource = "${replace(aws_msk_serverless_cluster.this.arn, ":cluster/", ":topic/")}/${var.topic_name}"
-      },
-      {
-        Sid    = "AllowFirehoseRoleToManageConsumerGroup"
-        Effect = "Allow"
-
-        Principal = {
-          AWS = aws_iam_role.firehose.arn
-        }
-
-        Action = [
-          "kafka-cluster:DescribeGroup",
-          "kafka-cluster:AlterGroup"
-        ]
-
-        Resource = "${replace(aws_msk_serverless_cluster.this.arn, ":cluster/", ":group/")}/*"
       }
     ]
   })

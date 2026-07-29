@@ -98,6 +98,7 @@ data "aws_iam_policy_document" "firehose" {
     actions = [
       "kafka:GetBootstrapBrokers",
       "kafka:DescribeCluster",
+      "kafka:DescribeClusterV2",
       "kafka-cluster:Connect",
       "kafka-cluster:DescribeCluster"
     ]
