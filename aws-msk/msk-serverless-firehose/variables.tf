@@ -106,3 +106,25 @@ variable "producer_public_subnet_az" {
   type        = string
   default     = "ap-south-1a"
 }
+
+#############################
+# Kafka UI EC2
+#############################
+
+variable "kafka_ui_instance_type" {
+  description = "EC2 instance type for the public Kafka UI host"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "kafka_ui_image" {
+  description = "Kafka UI container image"
+  type        = string
+  default     = "provectuslabs/kafka-ui:v0.7.2"
+}
+
+variable "kafka_ui_allowed_cidrs" {
+  description = "CIDR blocks allowed to access Kafka UI on port 8080; restrict this to trusted public IP ranges."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}

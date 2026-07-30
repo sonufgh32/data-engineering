@@ -76,3 +76,27 @@ output "producer_code_path_on_ec2" {
   description = "Directory containing the producer scripts on the EC2 host"
   value       = "/opt/msk-producer"
 }
+
+############################################
+# Kafka UI EC2
+############################################
+
+output "kafka_ui_instance_id" {
+  description = "EC2 instance ID of the Kafka UI host"
+  value       = aws_instance.kafka_ui.id
+}
+
+output "kafka_ui_public_ip" {
+  description = "Public IP address of the Kafka UI host"
+  value       = aws_instance.kafka_ui.public_ip
+}
+
+output "kafka_ui_url" {
+  description = "Public Kafka UI URL"
+  value       = "http://${aws_instance.kafka_ui.public_dns}:8080"
+}
+
+output "kafka_ui_ssm_start_session_command" {
+  description = "AWS CLI command for opening an SSM shell on the Kafka UI host"
+  value       = "aws ssm start-session --target ${aws_instance.kafka_ui.id} --region ${var.aws_region}"
+}

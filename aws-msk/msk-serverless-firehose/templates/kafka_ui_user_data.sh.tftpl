@@ -1,0 +1,26 @@
+#!/bin/bash
+set -euxo pipefail
+
+dnf update -y
+dnf install -y docker
+systemctl enable --now docker
+
+mkdir -p /opt/kafka-ui/libs
+curl --fail --location --retry 3 \
+  --output /opt/kafka-ui/libs/aws-msk-iam-auth-all.jar \
+  https://github.com/aws/aws-msk-iam-auth/releases/download/v2.2.0/aws-msk-iam-auth-2.2.0-all.jar
+
+docker pull ${kafka_ui_image}
+docker rm --force kafka-ui || true
+docker run --detach \
+  --name kafka-ui \
+  --restart unless-stopped \
+  --publish 8080:8080 \
+  --volume /opt/kafka-ui/libs:/kafka-ui/libs:ro \
+  --env KAFKA_CLUSTERS_0_NAME=msk-serverless \
+  --env KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS='${bootstrap_servers}' \
+  --env KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL=SASL_SSL \
+  --env KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM=AWS_MSK_IAM \
+  --env KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG='software.amazon.msk.auth.iam.IAMLoginModule required;' \
+  --env KAFKA_CLUSTERS_0_PROPERTIES_SASL_CLIENT_CALLBACK_HANDLER_CLASS=software.amazon.msk.auth.iam.IAMClientCallbackHandler \
+  ${kafka_ui_image}
